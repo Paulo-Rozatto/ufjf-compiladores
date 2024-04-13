@@ -6,7 +6,7 @@
 
     <groupId>br.ufjf.estudante</groupId>
     <artifactId>ufjf-compiladores</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -25,6 +25,12 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>src/main/java</outputDirectory>
+                            <lexDefinitions>
+                                <lexDefinition>src/main/flex/spec.flex</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
