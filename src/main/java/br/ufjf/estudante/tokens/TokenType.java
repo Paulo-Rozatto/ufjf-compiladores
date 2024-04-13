@@ -1,7 +1,6 @@
 package br.ufjf.estudante.tokens;
 
 public enum TokenType {
-    KEYWORD,
     IDENTIFIER("ID"),
 
     // KEYWORDS
@@ -50,6 +49,7 @@ public enum TokenType {
     NOT("!"),
 
     // MATH OPERATORS
+    ATTRIBUTION("="),
     ADDITION("+"),
     SUBTRACTION("-"),
     MULTIPLICATION("*"),
@@ -60,9 +60,5 @@ public enum TokenType {
 
     TokenType(String label) {
         this.label = label;
-    }
-
-    TokenType() {
-        this.label = "";
     }
 }
