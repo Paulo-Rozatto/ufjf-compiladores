@@ -10,7 +10,7 @@ import java.rmi.UnexpectedException;
 import java.util.Optional;
 
 import br.ufjf.estudante.tokens.TokenType;
-import br.ufjf.estudante.tokens.Token;import javax.xml.stream.events.Comment;
+import br.ufjf.estudante.tokens.Token;
 
 %%
 
@@ -25,18 +25,19 @@ import br.ufjf.estudante.tokens.Token;import javax.xml.stream.events.Comment;
 %{
     private int tokensSize;
 
-        public int getTokensSize() {
-            return  tokensSize;
-        };
+    public int getTokensSize() {
+        return  tokensSize;
+    };
 
-        private Token token(TokenType type) {
-            return new Token(type, yyline+1, yycolumn+1, Optional.empty());
-        }
-
-    private Token token(TokenType type, Object value) {
-        return new Token(type, yyline+1, yycolumn+1, Optional.of(value));
+    private Token token(TokenType type) {
+        tokensSize += 1;
+        return new Token(type, yyline+1, yycolumn+1, Optional.empty());
     }
 
+    private Token token(TokenType type, Object value) {
+        tokensSize += 1;
+        return new Token(type, yyline+1, yycolumn+1, Optional.of(value));
+    }
 %}
 
 %init{
@@ -50,7 +51,7 @@ Identifier      = [:lowercase:][:jletterdigit:]*
 PrimitiveLike   = [:uppercase:][:jletterdigit:]*
 LiteralInt      = [0-9]+
 LiteralFloat    = [0-9]*\.[0-9]+
-LiteralChar     = \'[:jletter:]\'
+LiteralChar     = '([:jletter:]|\\n|\\t|\\b|\\r|\\\\)'
 Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? serve caso o comentario esteja no final do arquivo
 
 %state MULTI_COMMENT
@@ -121,11 +122,12 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     // Identifier
     {Identifier}  { return token(TokenType.IDENTIFIER, yytext()); }
 
-    // Error
-    [^] { throw new UnexpectedException( String.format("%d:%d %s is not a valid character.", yyline + 1, yycolumn + 1, yytext())); }
 }
 
 <MULTI_COMMENT>{
    "-}"     { yybegin(YYINITIAL); }
-   [^"-}"]* {                     }
+   [^"-}"]  {}
 }
+
+// ERROR
+[^] { throw new UnexpectedException( String.format("%d:%d %s is not a valid character.", yyline + 1, yycolumn + 1, yytext())); }
