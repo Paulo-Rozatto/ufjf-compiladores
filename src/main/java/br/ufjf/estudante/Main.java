@@ -13,7 +13,7 @@ public class Main {
             Token t = lexer.nextToken();
 
             while (t != null) {
-                System.out.println(t);
+                System.out.println(t.toText());
                 t = lexer.nextToken();
             }
         } catch (IOException e) {

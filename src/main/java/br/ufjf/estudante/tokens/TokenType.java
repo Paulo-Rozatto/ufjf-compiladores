@@ -2,8 +2,16 @@ package br.ufjf.estudante.tokens;
 
 public enum TokenType {
     KEYWORD,
-    IDENTIFIER,
-    TYPE,
+    IDENTIFIER("ID"),
+
+    // KEYWORDS
+    IF("IF"),
+    THEN("THEN"),
+    ELSE("ELSE"),
+    PRINT("PRINT"),
+    READ("READ"),
+    ITERATE("ITERATE"),
+    RETURN("RETURN"),
 
     // PRIMITIVES
     INT("INT"),
@@ -12,11 +20,11 @@ public enum TokenType {
     BOOL("BOOL"),
 
     // LITERALS
-    LIT_INT,
-    LIT_FLOAT,
-    LIT_CHAR,
-    LIT_BOOL,
-    LIT_NULL,
+    LIT_INT("INT"),
+    LIT_FLOAT("FLOAT"),
+    LIT_CHAR("CHAR"),
+    LIT_BOOL("BOOL"),
+    LIT_NULL("NULL"),
 
     // BRACES
     ROUND_L("("),
