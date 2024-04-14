@@ -51,7 +51,7 @@ Identifier      = [:lowercase:][:jletterdigit:]*
 PrimitiveLike   = [:uppercase:][:jletterdigit:]*
 LiteralInt      = [0-9]+
 LiteralFloat    = [0-9]*\.[0-9]+
-LiteralChar     = '([:jletter:]|\\n|\\t|\\b|\\r|\\\\)'
+LiteralChar     = '([:jletter:]|\\n|\\t|\\b|\\r|\\\\|\\')'
 Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? serve caso o comentario esteja no final do arquivo
 
 %state MULTI_COMMENT
