@@ -12,22 +12,27 @@ Este projeto consiste na implementação de um analisador léxico para a linguag
 ### Clonar o Repositório
 Para começar, clone o repositório para obter o código-fonte mais recente:
 
+```bash
 git clone https://github.com/Paulo-Rozatto/ufjf-compiladores.git
+```
 
 
 ### Compilar o Projeto
 Navegue até a pasta do projeto clonado e execute o arquivo de build.sh:
 
+```bash
 cd ufjf-compiladores/
 ./build.sh
+```
 
 
 ## Execução
 
 Depois de compilar o projeto, execute o analisador léxico com o seguinte comando:
 
+```bash
 java -jar target/ufjf-compiladores-1.0.jar testes/sintaxe/exemplo1.txt
-
+```
 
 ## Sobre o Projeto
 
