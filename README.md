@@ -1,6 +1,6 @@
 # Trabalho de Compiladores
 
-Este projeto consiste na implementação de um analisador léxico para a linguagem "lang". O objetivo é desenvolver uma ferramenta capaz de identificar e classificar os componentes léxicos da linguagem conforme especificado nos materiais do curso. [Inclua mais detalhes específicos sobre o projeto aqui.]
+Este projeto consiste na implementação de um analisador léxico para a linguagem "lang". O objetivo é desenvolver uma ferramenta capaz de identificar e classificar os componentes léxicos da linguagem conforme especificado nos materiais do curso. 
 
 ## Pré-requisitos
 
