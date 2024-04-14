@@ -16,10 +16,10 @@ git clone https://github.com/Paulo-Rozatto/ufjf-compiladores.git
 
 
 ### Compilar o Projeto
-Navegue até a pasta do projeto clonado e compile o projeto usando o Maven:
+Navegue até a pasta do projeto clonado e execute o arquivo de build.sh:
 
 cd ufjf-compiladores/
-mvn clean package
+./build.sh
 
 
 ## Execução
