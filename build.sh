@@ -7,5 +7,5 @@ if [[ $is17 ]]; then
     echo "Java 17 detectado, compilando o projeto..."
     mvn clean package
 else
-    echo "Instale o Java 17 para compilar o código. No próximo semestre, especifique a versão que você quer, burrão."
+    echo "É necessário instalar o Java 17 para compilar o código."
 fi
