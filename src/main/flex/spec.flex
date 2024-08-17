@@ -6,6 +6,7 @@
 
 package de.jflex;
 
+import java_cup.runtime.Symbol;
 import java.rmi.UnexpectedException;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ import br.ufjf.estudante.tokens.Token;
 %unicode
 %line
 %column
-%type Token
+%type Symbol
 %function nextToken
 
 %{
@@ -29,14 +30,16 @@ import br.ufjf.estudante.tokens.Token;
         return  tokensSize;
     };
 
-    private Token token(TokenType type) {
+    private Symbol token(TokenType type) {
         tokensSize += 1;
-        return new Token(type, yyline+1, yycolumn+1, Optional.empty());
+        Token tk = new Token(type, yyline+1, yycolumn+1, Optional.empty());
+        return  new Symbol(type.ordinal(), tk);
     }
 
-    private Token token(TokenType type, Object value) {
+    private Symbol token(TokenType type, Object value) {
         tokensSize += 1;
-        return new Token(type, yyline+1, yycolumn+1, Optional.of(value));
+        Token tk = new Token(type, yyline+1, yycolumn+1, Optional.of(value));
+        return new Symbol(type.ordinal(), tk);
     }
 %}
 
@@ -84,9 +87,9 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     {LiteralInt}     { return token(TokenType.LIT_INT, Integer.parseInt(yytext())); }
     {LiteralFloat}   { return token(TokenType.LIT_FLOAT, Float.parseFloat(yytext())); }
     {LiteralChar}    { return token(TokenType.LIT_CHAR, yytext()); }
-    "true"           { return token(TokenType.LIT_BOOL, true); }
-    "false"          { return token(TokenType.LIT_BOOL, false); }
-    "null"           { return token(TokenType.LIT_NULL); }
+    "true"           { return token(TokenType.LIT_BOOL, yytext()); }
+    "false"          { return token(TokenType.LIT_BOOL, yytext()); }
+    "null"           { return token(TokenType.LIT_NULL, yytext()); }
 
     // BRACES
     "(" { return token(TokenType.ROUND_L); }

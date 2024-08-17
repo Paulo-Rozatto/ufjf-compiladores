@@ -7,6 +7,7 @@ package br.ufjf.estudante;
 
 import br.ufjf.estudante.tokens.Token;
 import de.jflex.Lexer;
+import java_cup.runtime.Symbol;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,10 +21,10 @@ public class Main {
 
         try {
             Lexer lexer = new Lexer(new FileReader(args[0]));
-            Token t = lexer.nextToken();
+            Symbol t = lexer.nextToken();
 
             while (t != null) {
-                System.out.println(t.toText());
+                System.out.println(((Token) t.value).toText());
                 t = lexer.nextToken();
             }
             System.out.printf("%d tokens lidos.\n", lexer.getTokensSize());
