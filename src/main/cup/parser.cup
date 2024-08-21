@@ -30,7 +30,7 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 // Math operators
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
-non terminal prog, def,data, decl, fun, type, btype, cmd, exp, lvalue, exps, params;
+non terminal prog, def,data, decl, fun, retType, type, btype, cmd, retIds, ids, exp, lvalue, exps, params;
 
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
@@ -41,11 +41,14 @@ precedence left EQUALS, NOT_EQUALS, SMALLER;
 
 precedence right NOT, NEW, COMMA, ELSE;
 
-prog ::= | def:d;
+prog ::= def:d;
 def ::= data:d | fun:f;
 data ::= data:d IDENTIFIER:i CURLY_L decl:dl CURLY_R;
 decl ::= IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
-fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R COLON type:t CURLY_L cmd CURLY_R; // todo: fazer tipo de retorno ser opcional
+fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R retType CURLY_L cmd CURLY_R;
+retType ::=
+    | COLON type:t
+    | COLON type:t COMMA retType;
 type ::= type:t SQUARE_L SQUARE_R | btype;
 btype ::= INT | FLOAT | CHAR | BOOL | IDENTIFIER;
 cmd ::= CURLY_L cmd CURLY_R
@@ -54,9 +57,13 @@ cmd ::= CURLY_L cmd CURLY_R
     | ITERATE ROUND_L exp ROUND_R cmd
     | READ lvalue SEMICOLON
     | PRINT exp SEMICOLON
-    | RETURN exp SEMICOLON // todo: poder retornar mais de um valor
+    | RETURN exps SEMICOLON
     | lvalue ATTRIBUTION exp SEMICOLON
-    | IDENTIFIER ROUND_L exps ROUND_R SEMICOLON; // todo: poder atribuir as variaves de retorno entre <>
+    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON;
+retIds ::=
+    | SMALLER ids GREATER;
+ids ::= IDENTIFIER
+    | COMMA ids;
 exp ::= exp AND exp
     | exp SMALLER exp
     | exp EQUALS exp
