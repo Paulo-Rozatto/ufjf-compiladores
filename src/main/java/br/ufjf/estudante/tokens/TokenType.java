@@ -59,7 +59,11 @@ public enum TokenType {
     SUBTRACTION("-"),
     MULTIPLICATION("*"),
     DIVISION("/"),
-    MOD("%");
+    MOD("%"),
+
+
+    // EOF
+    EOF("<<EOF>>");
 
     public final String label;
 

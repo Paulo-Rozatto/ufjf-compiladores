@@ -6,7 +6,7 @@
 
 package de.jflex;
 
-import java_cup.runtime.Symbol;
+import java_cup.runtime.*;
 import java.rmi.UnexpectedException;
 import java.util.Optional;
 
@@ -16,12 +16,18 @@ import br.ufjf.estudante.tokens.Token;
 %%
 
 %public
+%final
 %class Lexer
 %unicode
 %line
 %column
 %type Symbol
-%function nextToken
+%cup
+%function next_token
+%eofval{
+  return token(TokenType.EOF);
+%eofval}
+
 
 %{
     private int tokensSize;

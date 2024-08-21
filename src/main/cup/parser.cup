@@ -41,7 +41,7 @@ precedence left EQUALS, NOT_EQUALS, SMALLER;
 
 precedence right NOT, NEW, COMMA, ELSE;
 
-prog ::= def:d;
+prog ::= | def:d;
 def ::= data:d | fun:f;
 data ::= data:d IDENTIFIER:i CURLY_L decl:dl CURLY_R;
 decl ::= IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;

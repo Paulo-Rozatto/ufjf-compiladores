@@ -21,11 +21,11 @@ public class Main {
 
         try {
             Lexer lexer = new Lexer(new FileReader(args[0]));
-            Symbol t = lexer.nextToken();
+            Symbol t = lexer.next_token();
 
             while (t != null) {
                 System.out.println(((Token) t.value).toText());
-                t = lexer.nextToken();
+                t = lexer.next_token();
             }
             System.out.printf("%d tokens lidos.\n", lexer.getTokensSize());
         } catch (IOException e) {
