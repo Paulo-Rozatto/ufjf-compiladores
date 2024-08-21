@@ -7,7 +7,7 @@ package br.ufjf.estudante.tokens;
 
 import java.util.Optional;
 
-public record Token(TokenType type, int line, int col, Optional<Object> value) {
+public record Token(TokenType type, Optional<Object> value) {
     public String toText() {
         String text = type.label;
 
