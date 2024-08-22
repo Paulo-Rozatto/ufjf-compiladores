@@ -5,7 +5,6 @@
 
 package br.ufjf.estudante;
 
-import br.ufjf.estudante.ast.Program;
 import br.ufjf.estudante.tokens.TokenType;
 import de.jflex.Lexer;
 import java_cup.runtime.Scanner;
@@ -27,7 +26,6 @@ public class Main {
             Symbol t = lexer.next_token();
 
             while (t.sym != 0) {
-//                System.out.print(((Token) t.value).toText() + ", ");
                 String tk = TokenType.valueOf(Symbols.terminalNames[t.sym]).label;
                 if (t.value != null) {
                     tk += ":" + t.value;
