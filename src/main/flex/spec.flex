@@ -85,7 +85,7 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     "iterate"  { return token(Symbols.ITERATE, TokenType.ITERATE); }
     "return"   { return token(Symbols.RETURN, TokenType.RETURN); }
     "new"      { return token(Symbols.NEW, TokenType.NEW); }
-    "DATA"     { return token(Symbols.DATA, TokenType.DATA); }
+    "data"     { return token(Symbols.DATA, TokenType.DATA); }
 
     // Primitives
     "Int"           { return token(Symbols.INT, TokenType.INT); }

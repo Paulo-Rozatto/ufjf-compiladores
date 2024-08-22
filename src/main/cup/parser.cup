@@ -30,7 +30,7 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 // Math operators
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
-non terminal prog, def,data, decl, fun, retType, type, btype, cmd, retIds, ids, exp, lvalue, exps, params;
+non terminal prog, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
 
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
@@ -43,18 +43,21 @@ precedence right NOT, NEW, COMMA, ELSE;
 
 start with prog;
 
-prog ::= def;
+prog ::= prog def | def;
 def ::= fun:f | data:d;
 data ::= DATA IDENTIFIER:i CURLY_L decl:dl CURLY_R;
-decl ::= IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
-fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R retType CURLY_L cmd CURLY_R;
-retType ::=
-    | COLON type:t
-    | COLON type:t COMMA retType;
+decl ::= decl IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
+fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
+funType ::=
+    | COLON funTypeList;
+funTypeList ::= funTypeList COMMA funTypeList
+    | type ;
 type ::= type:t SQUARE_L SQUARE_R
+    | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
     | btype;
-btype ::= INT | FLOAT | CHAR | BOOL | IDENTIFIER;
-cmd ::= CURLY_L cmd CURLY_R
+btype ::= INT | FLOAT | CHAR | BOOL | IDENTIFIER; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
+cmdList ::= cmdList cmd | cmd;
+cmd ::= CURLY_L cmdList CURLY_R
     | IF ROUND_L exp:e ROUND_R cmd
     | IF ROUND_L exp:e ROUND_R cmd ELSE cmd
     | ITERATE ROUND_L exp ROUND_R cmd
@@ -66,7 +69,7 @@ cmd ::= CURLY_L cmd CURLY_R
 retIds ::=
     | SMALLER ids GREATER;
 ids ::= IDENTIFIER
-    | COMMA ids;
+    | ids COMMA ids;
 exp ::= exp AND exp
     | exp SMALLER exp
     | exp EQUALS exp
@@ -86,12 +89,13 @@ exp ::= exp AND exp
     | LIT_CHAR
     | lvalue
     | ROUND_L exp ROUND_R
-    | NEW type SQUARE_L exp SQUARE_R // todo: exp eh opcional (??) (entendi errado?)
+    | NEW type //SQUARE_L exp SQUARE_R // todo: exp eh opcional (??) (entendi errado?)
     | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
 lvalue ::= IDENTIFIER
     | lvalue SQUARE_L exp SQUARE_R
     | lvalue DOT IDENTIFIER;
-exps ::= exp
+exps ::=
+    | exp
     | exp COMMA exp;
 params ::=
     | params COMMA params

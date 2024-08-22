@@ -1,6 +1,9 @@
+import br.ufjf.estudante.tokens.TokenType;
 import de.jflex.Lexer;
 import java_cup.runtime.Scanner;
+import java_cup.runtime.Symbol;
 import lang.Parser;
+import lang.Symbols;
 import org.testng.annotations.Test;
 
 import java.io.FileReader;
@@ -10,11 +13,28 @@ public class SyntaxTest {
     final private static String rightPath = "src/test/resources/data/syntax/right/";
     final private static String wrongPath = "src/test/resources/data/syntax/wrong/";
 
+    private void print(String file) throws  Exception {
+        Lexer lexer = new Lexer(new FileReader(file));
+        Symbol t = lexer.next_token();
+
+        while (t.sym != 0) {
+            String tk = TokenType.valueOf(Symbols.terminalNames[t.sym]).label;
+            if (t.value != null) {
+                tk += ":" + t.value;
+            }
+            System.out.print(tk +  " ");
+            t = lexer.next_token();
+        }
+
+        System.out.printf("%d tokens lidos.\n", lexer.getTokensSize());
+    }
+
     private void accept(String file) throws Exception {
         Scanner scanner = null;
         Parser p = null;
 
         file = rightPath + file + ".lan";
+//        print(file);
         scanner = new Lexer(new FileReader(file));
         p = new Parser(scanner);
         p.parse();
@@ -224,6 +244,8 @@ public class SyntaxTest {
 
     @Test(groups = {"accept"})
     public void accept_data() throws Exception {
+        // todo: originalmente nesse arquivo o identifier esta com letra maiscula, perguntar se ta certo
+        // eu mudei data Ponto {...} -> data ponto {...}
         accept("data");
     }
 
@@ -314,6 +336,7 @@ public class SyntaxTest {
 
     @Test(groups = {"accept"})
     public void accept_instanciate() throws Exception {
+        // todo: mesmo problema do Ponto com letra maiscula!
         accept("instanciate");
     }
 
