@@ -1,0 +1,101 @@
+package lang;
+
+import java_cup.runtime.*;
+import de.jflex.Lexer;
+
+parser code{:
+    public boolean syntaxErrors;
+
+    Lexer lexer;
+
+    public Parser(Lexer lex) {
+        super(lex);
+        lexer = lex;
+    }
+:};
+
+terminal String IDENTIFIER;
+// Keywords
+terminal IF, THEN, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
+// Primitives
+terminal INT, FLOAT, CHAR, BOOL, CUSTOM;
+// Literals
+terminal LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_BOOL, LIT_NULL;
+// Braces
+terminal ROUND_L, ROUND_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R;
+// Separators
+terminal COLON, SEMICOLON, DOUBLE_COLON, DOT, COMMA;
+// Logical operators
+terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
+// Math operators
+terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
+
+non terminal prog, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
+
+precedence left ADDITION, SUBTRACTION;
+precedence left MULTIPLICATION, DIVISION, MOD;
+
+precedence nonassoc ATTRIBUTION;
+precedence nonassoc AND;
+precedence left EQUALS, NOT_EQUALS, SMALLER;
+
+precedence right NOT, NEW, COMMA, ELSE;
+
+start with prog;
+
+prog ::= prog def | def;
+def ::= fun:f | data:d;
+data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R;
+decl ::= decl IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
+fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
+funType ::=
+    | COLON funTypeList;
+funTypeList ::= funTypeList COMMA funTypeList
+    | type ;
+type ::= type:t SQUARE_L SQUARE_R
+    | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
+    | btype;
+btype ::= INT | FLOAT | CHAR | BOOL | CUSTOM; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
+cmdList ::= cmdList cmd | cmd;
+cmd ::= CURLY_L cmdList CURLY_R
+    | IF ROUND_L exp:e ROUND_R cmd
+    | IF ROUND_L exp:e ROUND_R cmd ELSE cmd
+    | ITERATE ROUND_L exp ROUND_R cmd
+    | READ lvalue SEMICOLON
+    | PRINT exp SEMICOLON
+    | RETURN exps SEMICOLON
+    | lvalue ATTRIBUTION exp SEMICOLON
+    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON;
+retIds ::=
+    | SMALLER ids GREATER;
+ids ::= IDENTIFIER
+    | ids COMMA ids;
+exp ::= exp AND exp
+    | exp SMALLER exp
+    | exp EQUALS exp
+    | exp NOT_EQUALS exp
+    | exp ADDITION exp
+    | exp SUBTRACTION exp
+    | exp MULTIPLICATION exp
+    | exp DIVISION exp
+    | exp MOD exp
+    | NOT exp
+    | SUBTRACTION exp
+    | LIT_BOOL
+    | LIT_NULL
+    | LIT_INT
+    | LIT_FLOAT
+    | LIT_CHAR
+    | lvalue
+    | ROUND_L exp ROUND_R
+    | NEW type //SQUARE_L exp SQUARE_R // todo: exp eh opcional (??) (entendi errado?)
+    | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
+lvalue ::= IDENTIFIER
+    | lvalue SQUARE_L exp SQUARE_R
+    | lvalue DOT IDENTIFIER;
+exps ::=
+    | exp
+    | exp COMMA exp;
+params ::=
+    | params COMMA params
+    | IDENTIFIER:i DOUBLE_COLON type:t;

@@ -6,21 +6,30 @@
 
 package de.jflex;
 
+import java_cup.runtime.*;
 import java.rmi.UnexpectedException;
 import java.util.Optional;
 
 import br.ufjf.estudante.tokens.TokenType;
 import br.ufjf.estudante.tokens.Token;
 
+import lang.Symbols;
+
 %%
 
 %public
+%final
 %class Lexer
 %unicode
 %line
 %column
-%type Token
-%function nextToken
+%type Symbol
+%cup
+%function next_token
+%eofval{
+  return token(Symbols.EOF);
+%eofval}
+
 
 %{
     private int tokensSize;
@@ -29,14 +38,14 @@ import br.ufjf.estudante.tokens.Token;
         return  tokensSize;
     };
 
-    private Token token(TokenType type) {
+    private Symbol token(int type) {
         tokensSize += 1;
-        return new Token(type, yyline+1, yycolumn+1, Optional.empty());
+        return  new Symbol(type, yyline+1, yycolumn+1);
     }
 
-    private Token token(TokenType type, Object value) {
+    private Symbol token(int type, Object value) {
         tokensSize += 1;
-        return new Token(type, yyline+1, yycolumn+1, Optional.of(value));
+        return new Symbol(type, yyline+1, yycolumn+1, value);
     }
 %}
 
@@ -65,62 +74,64 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     "{-"         { yybegin(MULTI_COMMENT); }
 
     // Keywords
-    "if"       { return token(TokenType.IF); }
-    "then"     { return token(TokenType.THEN); }
-    "else"     { return token(TokenType.ELSE); }
-    "print"    { return token(TokenType.PRINT); }
-    "read"     { return token(TokenType.READ); }
-    "iterate"  { return token(TokenType.ITERATE); }
-    "return"   { return token(TokenType.RETURN); }
+    "if"       { return token(Symbols.IF); }
+    "then"     { return token(Symbols.THEN); }
+    "else"     { return token(Symbols.ELSE); }
+    "print"    { return token(Symbols.PRINT); }
+    "read"     { return token(Symbols.READ); }
+    "iterate"  { return token(Symbols.ITERATE); }
+    "return"   { return token(Symbols.RETURN); }
+    "new"      { return token(Symbols.NEW); }
+    "data"     { return token(Symbols.DATA); }
 
     // Primitives
-    "Int"           { return token(TokenType.INT); }
-    "Float"         { return token(TokenType.FLOAT); }
-    "Char"          { return token(TokenType.CHAR); }
-    "Bool"          { return token(TokenType.BOOL); }
-    {PrimitiveLike} { throw new UnexpectedException( String.format("%d:%d %s is not a valid primitive.", yyline + 1, yycolumn + 1, yytext()));    }
+    "Int"           { return token(Symbols.INT); }
+    "Float"         { return token(Symbols.FLOAT); }
+    "Char"          { return token(Symbols.CHAR); }
+    "Bool"          { return token(Symbols.BOOL); }
+    {PrimitiveLike} { return token(Symbols.CUSTOM, yytext()); }
 
     // Literals
-    {LiteralInt}     { return token(TokenType.LIT_INT, Integer.parseInt(yytext())); }
-    {LiteralFloat}   { return token(TokenType.LIT_FLOAT, Float.parseFloat(yytext())); }
-    {LiteralChar}    { return token(TokenType.LIT_CHAR, yytext()); }
-    "true"           { return token(TokenType.LIT_BOOL, true); }
-    "false"          { return token(TokenType.LIT_BOOL, false); }
-    "null"           { return token(TokenType.LIT_NULL); }
+    {LiteralInt}     { return token(Symbols.LIT_INT, Integer.parseInt(yytext())); }
+    {LiteralFloat}   { return token(Symbols.LIT_FLOAT, Float.parseFloat(yytext())); }
+    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext()); }
+    "true"           { return token(Symbols.LIT_BOOL, true); }
+    "false"          { return token(Symbols.LIT_BOOL, false); }
+    "null"           { return token(Symbols.LIT_NULL); }
 
     // BRACES
-    "(" { return token(TokenType.ROUND_L); }
-    ")" { return token(TokenType.ROUND_R); }
-    "[" { return token(TokenType.SQUARE_L); }
-    "]" { return token(TokenType.SQUARE_R); }
-    "{" { return token(TokenType.CURLY_L); }
-    "}" { return token(TokenType.CURLY_R); }
+    "(" { return token(Symbols.ROUND_L); }
+    ")" { return token(Symbols.ROUND_R); }
+    "[" { return token(Symbols.SQUARE_L); }
+    "]" { return token(Symbols.SQUARE_R); }
+    "{" { return token(Symbols.CURLY_L); }
+    "}" { return token(Symbols.CURLY_R); }
 
     // SEPARATORS
-    "::" { return token(TokenType.DOUBLE_COLON); }
-    ":"  { return token(TokenType.COLON); }
-    ";"  { return token(TokenType.SEMICOLON); }
-    "."  { return token(TokenType.DOT); }
-    ","  { return token(TokenType.COMMA); }
+    "::" { return token(Symbols.DOUBLE_COLON); }
+    ":"  { return token(Symbols.COLON); }
+    ";"  { return token(Symbols.SEMICOLON); }
+    "."  { return token(Symbols.DOT); }
+    ","  { return token(Symbols.COMMA); }
 
     // LOGICAL OPERATORS
-    ">"  { return token(TokenType.GREATER); }
-    "<"  { return token(TokenType.SMALLER); }
-    "==" { return token(TokenType.EQUALS); }
-    "!=" { return token(TokenType.NOT_EQUALS); }
-    "&&" { return token(TokenType.AND); }
-    "!"  { return token(TokenType.NOT); }
+    ">"  { return token(Symbols.GREATER); }
+    "<"  { return token(Symbols.SMALLER); }
+    "==" { return token(Symbols.EQUALS); }
+    "!=" { return token(Symbols.NOT_EQUALS); }
+    "&&" { return token(Symbols.AND); }
+    "!"  { return token(Symbols.NOT); }
 
     // MATH OPERATORS
-    "=" { return token(TokenType.ATTRIBUTION); }
-    "+" { return token(TokenType.ADDITION); }
-    "-" { return token(TokenType.SUBTRACTION); }
-    "*" { return token(TokenType.MULTIPLICATION); }
-    "/" { return token(TokenType.DIVISION); }
-    "%" { return token(TokenType.MOD); }
+    "=" { return token(Symbols.ATTRIBUTION); }
+    "+" { return token(Symbols.ADDITION); }
+    "-" { return token(Symbols.SUBTRACTION); }
+    "*" { return token(Symbols.MULTIPLICATION); }
+    "/" { return token(Symbols.DIVISION); }
+    "%" { return token(Symbols.MOD); }
 
     // Identifier
-    {Identifier}  { return token(TokenType.IDENTIFIER, yytext()); }
+    {Identifier}  { return token(Symbols.IDENTIFIER, yytext()); }
 
 }
 

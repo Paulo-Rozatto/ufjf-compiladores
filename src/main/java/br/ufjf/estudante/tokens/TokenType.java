@@ -16,12 +16,15 @@ public enum TokenType {
     READ("READ"),
     ITERATE("ITERATE"),
     RETURN("RETURN"),
+    NEW("NEW"),
+    DATA("DATA"),
 
     // PRIMITIVES
     INT("INT"),
     FLOAT("FLOAT"),
     CHAR("CHAR"),
     BOOL("BOOL"),
+    CUSTOM("CUSTOM"),
 
     // LITERALS
     LIT_INT("INT"),
@@ -29,6 +32,8 @@ public enum TokenType {
     LIT_CHAR("CHAR"),
     LIT_BOOL("BOOL"),
     LIT_NULL("NULL"),
+    LIT_TRUE("TRUE"),
+    LIT_FALSE("FALSE"),
 
     // BRACES
     ROUND_L("("),
@@ -59,7 +64,10 @@ public enum TokenType {
     SUBTRACTION("-"),
     MULTIPLICATION("*"),
     DIVISION("/"),
-    MOD("%");
+    MOD("%"),
+
+    // EOF
+    EOF("<<EOF>>");
 
     public final String label;
 

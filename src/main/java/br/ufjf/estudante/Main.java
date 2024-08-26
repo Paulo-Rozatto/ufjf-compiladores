@@ -5,11 +5,14 @@
 
 package br.ufjf.estudante;
 
-import br.ufjf.estudante.tokens.Token;
+import br.ufjf.estudante.tokens.TokenType;
 import de.jflex.Lexer;
+import java_cup.runtime.Scanner;
+import java_cup.runtime.Symbol;
+import lang.Parser;
+import lang.Symbols;
 
 import java.io.FileReader;
-import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,14 +23,22 @@ public class Main {
 
         try {
             Lexer lexer = new Lexer(new FileReader(args[0]));
-            Token t = lexer.nextToken();
+            Symbol t = lexer.next_token();
 
-            while (t != null) {
-                System.out.println(t.toText());
-                t = lexer.nextToken();
+            while (t.sym != 0) {
+                String tk = TokenType.valueOf(Symbols.terminalNames[t.sym]).label;
+                if (t.value != null) {
+                    tk += ":" + t.value;
+                }
+                System.out.println(tk);
+                t = lexer.next_token();
             }
+
             System.out.printf("%d tokens lidos.\n", lexer.getTokensSize());
-        } catch (IOException e) {
+            Scanner scanner = new Lexer(new FileReader(args[0]));
+            Parser p = new Parser(scanner);
+            p.parse();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
