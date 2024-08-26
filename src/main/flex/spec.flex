@@ -14,7 +14,6 @@ import br.ufjf.estudante.tokens.TokenType;
 import br.ufjf.estudante.tokens.Token;
 
 import lang.Symbols;
-//Symbols.$1, TokenType.$1
 
 %%
 
@@ -28,7 +27,7 @@ import lang.Symbols;
 %cup
 %function next_token
 %eofval{
-  return token(Symbols.EOF, TokenType.EOF);
+  return token(Symbols.EOF);
 %eofval}
 
 
@@ -39,15 +38,13 @@ import lang.Symbols;
         return  tokensSize;
     };
 
-    private Symbol token(int type, TokenType tokenType) {
+    private Symbol token(int type) {
         tokensSize += 1;
-//        Token tk = new Token(tokenType, Optional.empty());
         return  new Symbol(type, yyline+1, yycolumn+1);
     }
 
-    private Symbol token(int type, TokenType tokenType, Object value) {
+    private Symbol token(int type, Object value) {
         tokensSize += 1;
-//        Token tk = new Token(tokenType, Optional.of(value));
         return new Symbol(type, yyline+1, yycolumn+1, value);
     }
 %}
@@ -77,64 +74,64 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     "{-"         { yybegin(MULTI_COMMENT); }
 
     // Keywords
-    "if"       { return token(Symbols.IF, TokenType.IF); }
-    "then"     { return token(Symbols.THEN, TokenType.THEN); }
-    "else"     { return token(Symbols.ELSE, TokenType.ELSE); }
-    "print"    { return token(Symbols.PRINT, TokenType.PRINT); }
-    "read"     { return token(Symbols.READ, TokenType.READ); }
-    "iterate"  { return token(Symbols.ITERATE, TokenType.ITERATE); }
-    "return"   { return token(Symbols.RETURN, TokenType.RETURN); }
-    "new"      { return token(Symbols.NEW, TokenType.NEW); }
-    "data"     { return token(Symbols.DATA, TokenType.DATA); }
+    "if"       { return token(Symbols.IF); }
+    "then"     { return token(Symbols.THEN); }
+    "else"     { return token(Symbols.ELSE); }
+    "print"    { return token(Symbols.PRINT); }
+    "read"     { return token(Symbols.READ); }
+    "iterate"  { return token(Symbols.ITERATE); }
+    "return"   { return token(Symbols.RETURN); }
+    "new"      { return token(Symbols.NEW); }
+    "data"     { return token(Symbols.DATA); }
 
     // Primitives
-    "Int"           { return token(Symbols.INT, TokenType.INT); }
-    "Float"         { return token(Symbols.FLOAT, TokenType.FLOAT); }
-    "Char"          { return token(Symbols.CHAR, TokenType.CHAR); }
-    "Bool"          { return token(Symbols.BOOL, TokenType.BOOL); }
-    {PrimitiveLike} { throw new UnexpectedException( String.format("%d:%d %s is not a valid primitive.", yyline + 1, yycolumn + 1, yytext()));    }
+    "Int"           { return token(Symbols.INT); }
+    "Float"         { return token(Symbols.FLOAT); }
+    "Char"          { return token(Symbols.CHAR); }
+    "Bool"          { return token(Symbols.BOOL); }
+    {PrimitiveLike} { return token(Symbols.CUSTOM, yytext()); }
 
     // Literals
-    {LiteralInt}     { return token(Symbols.LIT_INT, TokenType.LIT_INT, Integer.parseInt(yytext())); }
-    {LiteralFloat}   { return token(Symbols.LIT_FLOAT, TokenType.LIT_FLOAT, Float.parseFloat(yytext())); }
-    {LiteralChar}    { return token(Symbols.LIT_CHAR, TokenType.LIT_CHAR); }
-    "true"           { return token(Symbols.LIT_TRUE, TokenType.LIT_BOOL); }
-    "false"          { return token(Symbols.LIT_FALSE, TokenType.LIT_BOOL); }
-    "null"           { return token(Symbols.LIT_NULL, TokenType.LIT_NULL); }
+    {LiteralInt}     { return token(Symbols.LIT_INT, Integer.parseInt(yytext())); }
+    {LiteralFloat}   { return token(Symbols.LIT_FLOAT, Float.parseFloat(yytext())); }
+    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext()); }
+    "true"           { return token(Symbols.LIT_BOOL, true); }
+    "false"          { return token(Symbols.LIT_BOOL, false); }
+    "null"           { return token(Symbols.LIT_NULL); }
 
     // BRACES
-    "(" { return token(Symbols.ROUND_L, TokenType.ROUND_L); }
-    ")" { return token(Symbols.ROUND_R, TokenType.ROUND_R); }
-    "[" { return token(Symbols.SQUARE_L, TokenType.SQUARE_L); }
-    "]" { return token(Symbols.SQUARE_R, TokenType.SQUARE_R); }
-    "{" { return token(Symbols.CURLY_L, TokenType.CURLY_L); }
-    "}" { return token(Symbols.CURLY_R, TokenType.CURLY_R); }
+    "(" { return token(Symbols.ROUND_L); }
+    ")" { return token(Symbols.ROUND_R); }
+    "[" { return token(Symbols.SQUARE_L); }
+    "]" { return token(Symbols.SQUARE_R); }
+    "{" { return token(Symbols.CURLY_L); }
+    "}" { return token(Symbols.CURLY_R); }
 
     // SEPARATORS
-    "::" { return token(Symbols.DOUBLE_COLON, TokenType.DOUBLE_COLON); }
-    ":"  { return token(Symbols.COLON, TokenType.COLON); }
-    ";"  { return token(Symbols.SEMICOLON, TokenType.SEMICOLON); }
-    "."  { return token(Symbols.DOT, TokenType.DOT); }
-    ","  { return token(Symbols.COMMA, TokenType.COMMA); }
+    "::" { return token(Symbols.DOUBLE_COLON); }
+    ":"  { return token(Symbols.COLON); }
+    ";"  { return token(Symbols.SEMICOLON); }
+    "."  { return token(Symbols.DOT); }
+    ","  { return token(Symbols.COMMA); }
 
     // LOGICAL OPERATORS
-    ">"  { return token(Symbols.GREATER, TokenType.GREATER); }
-    "<"  { return token(Symbols.SMALLER, TokenType.SMALLER); }
-    "==" { return token(Symbols.EQUALS, TokenType.EQUALS); }
-    "!=" { return token(Symbols.NOT_EQUALS, TokenType.NOT_EQUALS); }
-    "&&" { return token(Symbols.AND, TokenType.AND); }
-    "!"  { return token(Symbols.NOT, TokenType.NOT); }
+    ">"  { return token(Symbols.GREATER); }
+    "<"  { return token(Symbols.SMALLER); }
+    "==" { return token(Symbols.EQUALS); }
+    "!=" { return token(Symbols.NOT_EQUALS); }
+    "&&" { return token(Symbols.AND); }
+    "!"  { return token(Symbols.NOT); }
 
     // MATH OPERATORS
-    "=" { return token(Symbols.ATTRIBUTION, TokenType.ATTRIBUTION); }
-    "+" { return token(Symbols.ADDITION, TokenType.ADDITION); }
-    "-" { return token(Symbols.SUBTRACTION, TokenType.SUBTRACTION); }
-    "*" { return token(Symbols.MULTIPLICATION, TokenType.MULTIPLICATION); }
-    "/" { return token(Symbols.DIVISION, TokenType.DIVISION); }
-    "%" { return token(Symbols.MOD, TokenType.MOD); }
+    "=" { return token(Symbols.ATTRIBUTION); }
+    "+" { return token(Symbols.ADDITION); }
+    "-" { return token(Symbols.SUBTRACTION); }
+    "*" { return token(Symbols.MULTIPLICATION); }
+    "/" { return token(Symbols.DIVISION); }
+    "%" { return token(Symbols.MOD); }
 
     // Identifier
-    {Identifier}  { return token(Symbols.IDENTIFIER, TokenType.IDENTIFIER, yytext()); }
+    {Identifier}  { return token(Symbols.IDENTIFIER, yytext()); }
 
 }
 

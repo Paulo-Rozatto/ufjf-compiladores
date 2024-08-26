@@ -18,9 +18,9 @@ terminal String IDENTIFIER;
 // Keywords
 terminal IF, THEN, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
 // Primitives
-terminal INT, FLOAT, CHAR, BOOL;
+terminal INT, FLOAT, CHAR, BOOL, CUSTOM;
 // Literals
-terminal LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_BOOL, LIT_NULL, LIT_TRUE, LIT_FALSE;
+terminal LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_BOOL, LIT_NULL;
 // Braces
 terminal ROUND_L, ROUND_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R;
 // Separators
@@ -45,7 +45,7 @@ start with prog;
 
 prog ::= prog def | def;
 def ::= fun:f | data:d;
-data ::= DATA IDENTIFIER:i CURLY_L decl:dl CURLY_R;
+data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R;
 decl ::= decl IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
 fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
 funType ::=
@@ -55,7 +55,7 @@ funTypeList ::= funTypeList COMMA funTypeList
 type ::= type:t SQUARE_L SQUARE_R
     | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
     | btype;
-btype ::= INT | FLOAT | CHAR | BOOL | IDENTIFIER; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
+btype ::= INT | FLOAT | CHAR | BOOL | CUSTOM; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
 cmdList ::= cmdList cmd | cmd;
 cmd ::= CURLY_L cmdList CURLY_R
     | IF ROUND_L exp:e ROUND_R cmd
@@ -81,8 +81,7 @@ exp ::= exp AND exp
     | exp MOD exp
     | NOT exp
     | SUBTRACTION exp
-    | LIT_TRUE
-    | LIT_FALSE
+    | LIT_BOOL
     | LIT_NULL
     | LIT_INT
     | LIT_FLOAT

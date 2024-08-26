@@ -24,6 +24,7 @@ public enum TokenType {
     FLOAT("FLOAT"),
     CHAR("CHAR"),
     BOOL("BOOL"),
+    CUSTOM("CUSTOM"),
 
     // LITERALS
     LIT_INT("INT"),
@@ -64,7 +65,6 @@ public enum TokenType {
     MULTIPLICATION("*"),
     DIVISION("/"),
     MOD("%"),
-
 
     // EOF
     EOF("<<EOF>>");

@@ -34,7 +34,7 @@ public class SyntaxTest {
         Parser p = null;
 
         file = rightPath + file + ".lan";
-//        print(file);
+        print(file);
         scanner = new Lexer(new FileReader(file));
         p = new Parser(scanner);
         p.parse();
@@ -244,8 +244,6 @@ public class SyntaxTest {
 
     @Test(groups = {"accept"})
     public void accept_data() throws Exception {
-        // todo: originalmente nesse arquivo o identifier esta com letra maiscula, perguntar se ta certo
-        // eu mudei data Ponto {...} -> data ponto {...}
         accept("data");
     }
 
@@ -336,7 +334,6 @@ public class SyntaxTest {
 
     @Test(groups = {"accept"})
     public void accept_instanciate() throws Exception {
-        // todo: mesmo problema do Ponto com letra maiscula!
         accept("instanciate");
     }
 
