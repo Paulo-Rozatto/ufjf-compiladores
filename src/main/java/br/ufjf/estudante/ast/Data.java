@@ -1,7 +1,7 @@
 package br.ufjf.estudante.ast;
 
-public class Data extends Node{
-    public Data(CustomType customType, Decl decl, int line) {
+public class Data extends Definition {
+    public Data(String name, Declaration decl, int line) {
         super(line);
     }
 }

@@ -1,21 +1,18 @@
 package br.ufjf.estudante.ast;
 
-import java.util.ArrayList;
-
 public class Program extends Node {
-//    final private ArrayList<Def> defList = new ArrayList<>();
-    final private DefList defList;
+    final private DefinitionList defList;
 
-    public Program(DefList d, int ln) {
+    public Program(DefinitionList d, int ln) {
         super(ln);
         defList = d;
     }
 
-//    public void add(Def d) {
-//        defList.add(d);
-//    }
-//
-    public Def get(int i) {
+    public void add(Definition d) {
+        defList.add(d);
+    }
+
+    public Definition get(int i) {
         return defList.get(i);
     }
 

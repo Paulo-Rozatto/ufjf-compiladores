@@ -19,9 +19,14 @@ terminal String IDENTIFIER;
 // Keywords
 terminal IF, THEN, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
 // Primitives
-terminal INT, FLOAT, CHAR, BOOL, CUSTOM;
+terminal TypePrimitive INT, FLOAT, CHAR, BOOL;
+terminal String CUSTOM;
 // Literals
-terminal LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_BOOL, LIT_NULL;
+terminal int     LIT_INT;
+terminal float   LIT_FLOAT;
+terminal char    LIT_CHAR;
+terminal boolean LIT_BOOL;
+terminal LIT_NULL;
 // Braces
 terminal ROUND_L, ROUND_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R;
 // Separators
@@ -31,7 +36,25 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 // Math operators
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
-non terminal prog, defList, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
+non terminal Program prog;
+non terminal DefinitionList defList;
+non terminal Definition def;
+non terminal Data data;
+non terminal Declaration decl;
+non terminal fun;
+non terminal retType;
+non terminal retTypeList;
+non terminal Type type;
+non terminal Type btype;
+non terminal cmdList;
+non terminal cmd;
+non terminal retIds;
+non terminal ids;
+non terminal exp;
+non terminal lvalue;
+non terminal exps;
+non terminal params;
+non terminal cond;
 
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
@@ -44,32 +67,36 @@ precedence right NOT, NEW, COMMA, ELSE;
 
 start with prog;
 
-prog ::= defList:d                                                    {: RESULT = new Program((DefList) d, dleft); :};
+prog ::= defList:d                                                  {: RESULT = new Program(d, dleft); :};
 
-defList ::=                                                           {: RESULT = new DefList(); :}
-    | defList:dl def:d                                                {: ((DefList) dl).add(new Def()); RESULT = dl; :};
+defList ::=                                                         {: RESULT = new DefinitionList(-1); :}
+    | defList:dl def:d                                              {: RESULT = dl; RESULT.add(d); :};
 
-def ::= fun:f                                                         {: RESULT = f; :}
-    | data:d                                                          {: RESULT = d; :};
+def ::= fun:f                                                       {: RESULT = new Data("temp", null, -1); :}
+    | data:d                                                        {: RESULT = d; :};
 
-data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R {: RESULT = new Data((CustomType) new CustomType(), (Decl) dl, cleft); :};
+data ::= DATA CUSTOM:name CURLY_L decl:d CURLY_R                    {: RESULT = new Data(name, d, nameleft); :};
 
-decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON              {: RESULT = d; :}
-    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                      {: RESULT = new Decl(); :};
+decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON          {: RESULT = d; RESULT.add(i, t); :}
+    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                    {: RESULT = new Declaration(ileft); RESULT.add(i, t); :};
 
-fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
+fun ::= IDENTIFIER:id ROUND_L params:p ROUND_R retType CURLY_L cmdList CURLY_R;
 
-funType ::=
-    | COLON funTypeList;
+retType ::=
+    | COLON retTypeList;
 
-funTypeList ::= funTypeList COMMA funTypeList
+retTypeList ::= retTypeList COMMA retTypeList
     | type ;
 
-type ::= type:t SQUARE_L SQUARE_R
-    | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
-    | btype;
+type ::= type:t SQUARE_L SQUARE_R {: RESULT = t; t.increaseDimensions(); :}
+    | btype:b {: RESULT = b; :};
 
-btype ::= INT | FLOAT | CHAR | BOOL | CUSTOM; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
+
+btype ::= INT:i {: RESULT = new TypePrimitive<Integer>(ileft); :}
+    | FLOAT:i {: RESULT = new TypePrimitive<Float>(ileft); :}
+    | CHAR:i {: RESULT = new TypePrimitive<Character>(ileft); :}
+    | BOOL:i {: RESULT = new TypePrimitive<Boolean>(ileft); :}
+    | CUSTOM:i {: RESULT = new TypeCustom(ileft); :};
 
 cmdList ::= cmdList cmd | cmd;
 
@@ -104,7 +131,8 @@ exp ::= exp AND exp
     | LIT_CHAR
     | lvalue
     | ROUND_L exp ROUND_R
-    | NEW type //SQUARE_L exp SQUARE_R // todo: exp eh opcional (??) (entendi errado?)
+    | NEW type
+    | NEW type SQUARE_L exp SQUARE_R // talvez de errado em arrays com 3+ dimensoes
     | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
 lvalue ::= IDENTIFIER
     | lvalue SQUARE_L exp SQUARE_R
