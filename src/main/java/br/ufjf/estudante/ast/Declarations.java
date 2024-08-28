@@ -2,10 +2,10 @@ package br.ufjf.estudante.ast;
 
 import java.util.HashMap;
 
-public class Declaration extends Definition {
+public class Declarations extends Node {
     private final HashMap<String, Type> innerVariables = new HashMap<>();
 
-    public Declaration(int line) {
+    public Declarations(int line) {
         super(line);
     }
 

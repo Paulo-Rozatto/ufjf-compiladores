@@ -37,23 +37,23 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
 non terminal Program prog;
-non terminal DefinitionList defList;
+non terminal DefinitionsList defList;
 non terminal Definition def;
 non terminal Data data;
-non terminal Declaration decl;
-non terminal fun;
-non terminal retType;
-non terminal retTypeList;
+non terminal Declarations decl;
+non terminal Function fun;
+non terminal Params params;
+non terminal ReturnTypes retTypes;
+non terminal ReturnTypes retTypesList;
 non terminal Type type;
 non terminal Type btype;
-non terminal cmdList;
-non terminal cmd;
+non terminal CommandsList cmdList;
+non terminal Command cmd;
 non terminal retIds;
 non terminal ids;
 non terminal exp;
 non terminal lvalue;
 non terminal exps;
-non terminal params;
 non terminal cond;
 
 precedence left ADDITION, SUBTRACTION;
@@ -67,48 +67,57 @@ precedence right NOT, NEW, COMMA, ELSE;
 
 start with prog;
 
-prog ::= defList:d                                                  {: RESULT = new Program(d, dleft); :};
+prog ::= defList:d                                                              {: RESULT = new Program(d, dleft); :};
 
-defList ::=                                                         {: RESULT = new DefinitionList(-1); :}
-    | defList:dl def:d                                              {: RESULT = dl; RESULT.add(d); :};
+defList ::=                                                                     {: RESULT = new DefinitionsList(-1); :}
+    | defList:dl def:d                                                          {: RESULT = dl; RESULT.add(d); :};
 
-def ::= fun:f                                                       {: RESULT = new Data("temp", null, -1); :}
-    | data:d                                                        {: RESULT = d; :};
+def ::= fun:f                                                                   {: RESULT = f; :}
+    | data:d                                                                    {: RESULT = d; :};
 
-data ::= DATA CUSTOM:name CURLY_L decl:d CURLY_R                    {: RESULT = new Data(name, d, nameleft); :};
+data ::= DATA CUSTOM:name CURLY_L decl:d CURLY_R                                {: RESULT = new Data(name, d, nameleft); :};
 
-decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON          {: RESULT = d; RESULT.add(i, t); :}
-    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                    {: RESULT = new Declaration(ileft); RESULT.add(i, t); :};
+decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                      {: RESULT = d; RESULT.add(i, t); :}
+    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                                {: RESULT = new Declarations(ileft); RESULT.add(i, t); :};
 
-fun ::= IDENTIFIER:id ROUND_L params:p ROUND_R retType CURLY_L cmdList CURLY_R;
+fun ::= IDENTIFIER:id ROUND_L params:p ROUND_R retTypes:r CURLY_L cmdList:c CURLY_R {: RESULT = new Function(id, p, r, c, idleft); :};
 
-retType ::=
-    | COLON retTypeList;
+params ::=
+    | params:p COMMA IDENTIFIER:i DOUBLE_COLON type:t                           {: RESULT = p; RESULT.add(i, t); :}
+    | IDENTIFIER:i DOUBLE_COLON type:t                                          {: RESULT = new Params(ileft); RESULT.add(i, t); :};
 
-retTypeList ::= retTypeList COMMA retTypeList
-    | type ;
+retTypes ::=
+    | COLON retTypesList:r {: RESULT = r; :};
 
-type ::= type:t SQUARE_L SQUARE_R {: RESULT = t; t.increaseDimensions(); :}
-    | btype:b {: RESULT = b; :};
+retTypesList ::= retTypesList:r COMMA type:t                                    {: RESULT = r; RESULT.add(t); :}
+    | type:t                                                                    {: RESULT = new ReturnTypes(tleft); RESULT.add(t); :};
 
+type ::= type:t SQUARE_L SQUARE_R                                               {: RESULT = t; t.increaseDimensions(); :}
+    | btype:b                                                                   {: RESULT = b; :};
 
-btype ::= INT:i {: RESULT = new TypePrimitive<Integer>(ileft); :}
-    | FLOAT:i {: RESULT = new TypePrimitive<Float>(ileft); :}
-    | CHAR:i {: RESULT = new TypePrimitive<Character>(ileft); :}
-    | BOOL:i {: RESULT = new TypePrimitive<Boolean>(ileft); :}
-    | CUSTOM:i {: RESULT = new TypeCustom(ileft); :};
+btype ::= INT:i                                                                 {: RESULT = new TypePrimitive<Integer>(ileft); :}
+    | FLOAT:i                                                                   {: RESULT = new TypePrimitive<Float>(ileft); :}
+    | CHAR:i                                                                    {: RESULT = new TypePrimitive<Character>(ileft); :}
+    | BOOL:i                                                                    {: RESULT = new TypePrimitive<Boolean>(ileft); :}
+    | CUSTOM:i                                                                  {: RESULT = new TypeCustom(ileft); :};
 
-cmdList ::= cmdList cmd | cmd;
+cmdList ::= cmdList:cl cmd:c                                                    {: RESULT = cl; RESULT.add(c); :}
+    | cmd:c                                                                     {: RESULT = new CommandsList(cleft); RESULT.add(c); :};
 
-cmd ::= CURLY_L cmdList CURLY_R
-    | IF ROUND_L exp:e ROUND_R cmd
-    | IF ROUND_L exp:e ROUND_R cmd ELSE cmd
-    | ITERATE ROUND_L exp ROUND_R cmd
-    | READ lvalue SEMICOLON
-    | PRINT exp SEMICOLON
-    | RETURN exps SEMICOLON
-    | lvalue ATTRIBUTION exp SEMICOLON
-    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON;
+cmd ::= CURLY_L cmdList CURLY_R {: RESULT = new Command(-1); :}
+    | IF ROUND_L exp:e ROUND_R cmd {: RESULT = new Command(-1); :}
+    | IF ROUND_L exp:e ROUND_R cmd ELSE cmd {: RESULT = new Command(-1); :}
+    | ITERATE ROUND_L exp ROUND_R cmd {: RESULT = new Command(-1); :}
+    | READ lvalue SEMICOLON {: RESULT = new Command(-1); :}
+    | PRINT exp SEMICOLON {: RESULT = new Command(-1); :}
+    | RETURN exps SEMICOLON {: RESULT = new Command(-1); :}
+    | lvalue ATTRIBUTION exp SEMICOLON {: RESULT = new Command(-1); :}
+    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON {: RESULT = new Command(-1); :};
+
+lvalue ::= IDENTIFIER
+    | lvalue SQUARE_L exp SQUARE_R
+    | lvalue DOT IDENTIFIER;
+
 retIds ::=
     | SMALLER ids GREATER;
 ids ::= IDENTIFIER
@@ -134,12 +143,7 @@ exp ::= exp AND exp
     | NEW type
     | NEW type SQUARE_L exp SQUARE_R // talvez de errado em arrays com 3+ dimensoes
     | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
-lvalue ::= IDENTIFIER
-    | lvalue SQUARE_L exp SQUARE_R
-    | lvalue DOT IDENTIFIER;
+
 exps ::=
     | exp
     | exp COMMA exp;
-params ::=
-    | params COMMA params
-    | IDENTIFIER:i DOUBLE_COLON type:t;

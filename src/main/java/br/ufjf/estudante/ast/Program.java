@@ -1,9 +1,9 @@
 package br.ufjf.estudante.ast;
 
 public class Program extends Node {
-    final private DefinitionList defList;
+    final private DefinitionsList defList;
 
-    public Program(DefinitionList d, int ln) {
+    public Program(DefinitionsList d, int ln) {
         super(ln);
         defList = d;
     }
