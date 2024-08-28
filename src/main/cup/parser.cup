@@ -2,6 +2,7 @@ package lang;
 
 import java_cup.runtime.*;
 import de.jflex.Lexer;
+import br.ufjf.estudante.ast.*;
 
 parser code{:
     public boolean syntaxErrors;
@@ -30,7 +31,7 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 // Math operators
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
-non terminal prog, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
+non terminal prog, defList, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
 
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
@@ -43,20 +44,35 @@ precedence right NOT, NEW, COMMA, ELSE;
 
 start with prog;
 
-prog ::= prog def | def;
-def ::= fun:f | data:d;
-data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R;
-decl ::= decl IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
+prog ::= defList:d                                                    {: RESULT = new Program((DefList) d, dleft); :};
+
+defList ::=                                                           {: RESULT = new DefList(); :}
+    | defList:dl def:d                                                {: ((DefList) dl).add(new Def()); RESULT = dl; :};
+
+def ::= fun:f                                                         {: RESULT = f; :}
+    | data:d                                                          {: RESULT = d; :};
+
+data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R {: RESULT = new Data((CustomType) new CustomType(), (Decl) dl, cleft); :};
+
+decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON              {: RESULT = d; :}
+    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                      {: RESULT = new Decl(); :};
+
 fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
+
 funType ::=
     | COLON funTypeList;
+
 funTypeList ::= funTypeList COMMA funTypeList
     | type ;
+
 type ::= type:t SQUARE_L SQUARE_R
     | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
     | btype;
+
 btype ::= INT | FLOAT | CHAR | BOOL | CUSTOM; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
+
 cmdList ::= cmdList cmd | cmd;
+
 cmd ::= CURLY_L cmdList CURLY_R
     | IF ROUND_L exp:e ROUND_R cmd
     | IF ROUND_L exp:e ROUND_R cmd ELSE cmd
