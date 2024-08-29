@@ -51,9 +51,9 @@ non terminal CommandsList cmdList;
 non terminal Command cmd;
 non terminal retIds;
 non terminal ids;
-non terminal exp;
-non terminal lvalue;
-non terminal exps;
+non terminal Expression exp;
+non terminal LValue lvalue;
+non terminal ExpressionsList exps;
 non terminal cond;
 
 precedence left ADDITION, SUBTRACTION;
@@ -104,24 +104,26 @@ btype ::= INT:i                                                                 
 cmdList ::= cmdList:cl cmd:c                                                    {: RESULT = cl; RESULT.add(c); :}
     | cmd:c                                                                     {: RESULT = new CommandsList(cleft); RESULT.add(c); :};
 
-cmd ::= CURLY_L cmdList CURLY_R {: RESULT = new Command(-1); :}
-    | IF ROUND_L exp:e ROUND_R cmd {: RESULT = new Command(-1); :}
-    | IF ROUND_L exp:e ROUND_R cmd ELSE cmd {: RESULT = new Command(-1); :}
-    | ITERATE ROUND_L exp ROUND_R cmd {: RESULT = new Command(-1); :}
-    | READ lvalue SEMICOLON {: RESULT = new Command(-1); :}
-    | PRINT exp SEMICOLON {: RESULT = new Command(-1); :}
-    | RETURN exps SEMICOLON {: RESULT = new Command(-1); :}
-    | lvalue ATTRIBUTION exp SEMICOLON {: RESULT = new Command(-1); :}
-    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON {: RESULT = new Command(-1); :};
+cmd ::= CURLY_L cmdList:c CURLY_R                                               {: RESULT = c; :}
+    | IF ROUND_L exp:e ROUND_R cmd:c                                            {: RESULT = new CommandIf(e, c, eleft); :}
+    | IF ROUND_L exp:e ROUND_R cmd:c1 ELSE cmd:c2                               {: RESULT = new CommandIf(e, c1, c2, eleft); :}
+    | ITERATE ROUND_L exp:e ROUND_R cmd:c                                       {: RESULT = new CommandIterate(e, c, eleft); :}
+    | READ lvalue:l SEMICOLON                                                   {: RESULT = new CommandRead(l, lleft); :}
+    | PRINT exp:e SEMICOLON                                                     {: RESULT = new CommandPrint(e, eleft); :}
+    | RETURN exps:e SEMICOLON                                                   {: RESULT = new CommandReturn(e, eleft); :}
+    | lvalue:l ATTRIBUTION exp:e SEMICOLON                                      {: RESULT = new CommandAttribution(l, e, lleft); :}
+    | IDENTIFIER ROUND_L exps:e ROUND_R retIds:r SEMICOLON                      {: RESULT = new CommandCall(e, r, eleft); :};
 
-lvalue ::= IDENTIFIER
+lvalue ::= IDENTIFIER // todo: missing returning actually LValue here
     | lvalue SQUARE_L exp SQUARE_R
     | lvalue DOT IDENTIFIER;
 
-retIds ::=
+retIds ::= // todo: missing class and returing write value here
     | SMALLER ids GREATER;
+
 ids ::= IDENTIFIER
-    | ids COMMA ids;
+    | ids COMMA IDENTIFIER;
+
 exp ::= exp AND exp
     | exp SMALLER exp
     | exp EQUALS exp
@@ -144,6 +146,6 @@ exp ::= exp AND exp
     | NEW type SQUARE_L exp SQUARE_R // talvez de errado em arrays com 3+ dimensoes
     | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
 
-exps ::=
-    | exp
-    | exp COMMA exp;
+exps ::= {: RESULT = new ExpressionsList(0); :}
+    | exp:e {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}
+    | exps:es COMMA exp:e {:  RESULT = es; RESULT.add(e); :};
