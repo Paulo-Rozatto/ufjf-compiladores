@@ -3,7 +3,7 @@ package br.ufjf.estudante.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LValue extends Node {
+public class LValue extends Expression {
     private final String id;
     private final List<Object> modifiers = new ArrayList<>();
 

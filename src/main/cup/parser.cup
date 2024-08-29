@@ -26,7 +26,7 @@ terminal String CUSTOM;
 // Literals
 terminal int     LIT_INT;
 terminal float   LIT_FLOAT;
-terminal char    LIT_CHAR;
+terminal String    LIT_CHAR;
 terminal boolean LIT_BOOL;
 terminal LIT_NULL;
 // Braces
@@ -126,27 +126,27 @@ retIds ::=
 ids ::= IDENTIFIER:i                                                            {: RESULT = new ArrayList<String>(); RESULT.add(i); :}
     | ids:ids COMMA IDENTIFIER:i                                                {: RESULT = ids; RESULT.add(i); :};
 
-exp ::= exp AND exp
-    | exp SMALLER exp
-    | exp EQUALS exp
-    | exp NOT_EQUALS exp
-    | exp ADDITION exp
-    | exp SUBTRACTION exp
-    | exp MULTIPLICATION exp
-    | exp DIVISION exp
-    | exp MOD exp
-    | NOT exp
-    | SUBTRACTION exp
-    | LIT_BOOL
-    | LIT_NULL
-    | LIT_INT
-    | LIT_FLOAT
-    | LIT_CHAR
-    | lvalue
-    | ROUND_L exp ROUND_R
-    | NEW type
-    | NEW type SQUARE_L exp SQUARE_R // talvez de errado em arrays com 3+ dimensoes
-    | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
+exp ::= exp:e1 AND exp:e2                                                       {: RESULT = new ExpressionBoolean("&&", e1, e2, e1left); :}
+    | exp:e1 SMALLER exp:e2                                                     {: RESULT = new ExpressionBoolean("||", e1, e2, e1left); :}
+    | exp:e1 EQUALS exp:e2                                                      {: RESULT = new ExpressionBoolean("==", e1, e2, e1left); :}
+    | exp:e1 NOT_EQUALS exp:e2                                                  {: RESULT = new ExpressionBoolean("!=", e1, e2, e1left); :}
+    | exp:e1 ADDITION exp:e2                                                    {: RESULT = new ExpressionArithmetic("+", e1, e2, e1left); :}
+    | exp:e1 SUBTRACTION exp:e2                                                 {: RESULT = new ExpressionArithmetic("-", e1, e2, e1left); :}
+    | exp:e1 MULTIPLICATION exp:e2                                              {: RESULT = new ExpressionArithmetic("*", e1, e2, e1left); :}
+    | exp:e1 DIVISION exp:e2                                                    {: RESULT = new ExpressionArithmetic("/", e1, e2, e1left); :}
+    | exp:e1 MOD exp:e2                                                         {: RESULT = new ExpressionArithmetic("%", e1, e2, e1left); :}
+    | NOT exp:e2                                                                {: RESULT = new ExpressionBoolean("!", null, e2, e2left); :}
+    | SUBTRACTION exp:e2                                                        {: RESULT = new ExpressionArithmetic("!", null, e2, e2left); :}
+    | LIT_BOOL:b                                                                {: RESULT = new LiteralBool(b, bleft); :}
+    | LIT_NULL:l                                                                {: RESULT = new LiteralNull(lleft); :}
+    | LIT_INT:l                                                                 {: RESULT = new LiteralInt(l, lleft); :}
+    | LIT_FLOAT:l                                                               {: RESULT = new LiteralFloat(l, lleft); :}
+    | LIT_CHAR:l                                                                {: RESULT = new LiteralChar(l.charAt(0), lleft); :}
+    | lvalue:l                                                                  {: RESULT = l; :}
+    | ROUND_L exp:e ROUND_R                                                     {: RESULT = e; :}
+    | NEW type:t                                                                {: RESULT = new ExpressionNew(t, tleft); :}
+    | NEW type:t SQUARE_L exp:e SQUARE_R                                        {: RESULT = new ExpressionNew(t, e, tleft); :}; // talvez de errado em arrays com 3+ dimensoes
+//    | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R; // que? vamos deixar esse treco para descobrir o que eh quando der ruim
 
 exps ::= {: RESULT = new ExpressionsList(0); :}
     | exp:e {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}
