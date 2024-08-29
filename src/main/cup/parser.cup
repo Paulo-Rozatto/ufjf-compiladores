@@ -3,6 +3,8 @@ package lang;
 import java_cup.runtime.*;
 import de.jflex.Lexer;
 import br.ufjf.estudante.ast.*;
+import java.util.ArrayList;
+import java.util.List;
 
 parser code{:
     public boolean syntaxErrors;
@@ -49,8 +51,8 @@ non terminal Type type;
 non terminal Type btype;
 non terminal CommandsList cmdList;
 non terminal Command cmd;
-non terminal retIds;
-non terminal ids;
+non terminal List<String> retIds;
+non terminal List<String> ids;
 non terminal Expression exp;
 non terminal LValue lvalue;
 non terminal ExpressionsList exps;
@@ -114,15 +116,15 @@ cmd ::= CURLY_L cmdList:c CURLY_R                                               
     | lvalue:l ATTRIBUTION exp:e SEMICOLON                                      {: RESULT = new CommandAttribution(l, e, lleft); :}
     | IDENTIFIER ROUND_L exps:e ROUND_R retIds:r SEMICOLON                      {: RESULT = new CommandCall(e, r, eleft); :};
 
-lvalue ::= IDENTIFIER // todo: missing returning actually LValue here
-    | lvalue SQUARE_L exp SQUARE_R
-    | lvalue DOT IDENTIFIER;
+lvalue ::= IDENTIFIER:i                                                         {: RESULT = new LValue(i, ileft); :}
+    | lvalue:l SQUARE_L exp:e SQUARE_R                                          {: RESULT = l; RESULT.addModifier(e); :}
+    | lvalue:l DOT IDENTIFIER:i                                                 {: RESULT = l; RESULT.addModifier(i); :};
 
-retIds ::= // todo: missing class and returing write value here
-    | SMALLER ids GREATER;
+retIds ::=
+    | SMALLER ids:i GREATER                                                     {: RESULT = i; :};
 
-ids ::= IDENTIFIER
-    | ids COMMA IDENTIFIER;
+ids ::= IDENTIFIER:i                                                            {: RESULT = new ArrayList<String>(); RESULT.add(i); :}
+    | ids:ids COMMA IDENTIFIER:i                                                {: RESULT = ids; RESULT.add(i); :};
 
 exp ::= exp AND exp
     | exp SMALLER exp

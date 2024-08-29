@@ -1,7 +1,22 @@
 package br.ufjf.estudante.ast;
 
-public class LValue extends Node{
-    public LValue(int line) {
+import java.util.ArrayList;
+import java.util.List;
+
+public class LValue extends Node {
+    private final String id;
+    private final List<Object> modifiers = new ArrayList<>();
+
+    public LValue(String id, int line) {
         super(line);
+        this.id = id;
+    }
+
+    public void addModifier(String id) {
+        modifiers.add(id);
+    }
+
+    public void addModifier(Expression exp) {
+        modifiers.add(exp);
     }
 }
