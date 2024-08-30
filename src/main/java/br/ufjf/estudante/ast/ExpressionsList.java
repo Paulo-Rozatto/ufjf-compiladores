@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +14,10 @@ public class ExpressionsList extends Node {
 
     public void add(Expression expression) {
         expressions.add(expression);
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }
 

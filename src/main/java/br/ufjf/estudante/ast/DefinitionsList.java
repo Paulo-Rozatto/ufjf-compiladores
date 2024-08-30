@@ -1,11 +1,11 @@
 package br.ufjf.estudante.ast;
 
-import java.util.ArrayList;
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class DefinitionsList extends Node{
+public class DefinitionsList extends Node {
     private final Map<String, Definition> defList = new HashMap<>();
 
     public DefinitionsList(int line) {
@@ -26,4 +26,7 @@ public class DefinitionsList extends Node{
     }
 
 
+    public void accept(Visitor v) {
+        v.visit(this);
+    }
 }

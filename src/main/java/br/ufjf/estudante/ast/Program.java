@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 public class Program extends Node {
     final private DefinitionsList defList;
 

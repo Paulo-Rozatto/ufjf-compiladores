@@ -145,8 +145,8 @@ exp ::= exp:e1 AND exp:e2                                                       
     | lvalue:l                                                                  {: RESULT = l; :}
     | ROUND_L exp:e ROUND_R                                                     {: RESULT = e; :}
     | NEW type:t                                                                {: RESULT = new ExpressionNew(t, tleft); :}
-    | NEW type:t SQUARE_L exp:e SQUARE_R                                        {: RESULT = new ExpressionNew(t, e, tleft); :}; // talvez de errado em arrays com 3+ dimensoes
-//    | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R; // que? vamos deixar esse treco para descobrir o que eh quando der ruim
+    | NEW type:t SQUARE_L exp:e SQUARE_R                                        {: RESULT = new ExpressionNew(t, e, tleft); :} // talvez de errado em arrays com 3+ dimensoes
+    | IDENTIFIER ROUND_L exps:e1 ROUND_R SQUARE_L exp:e2 SQUARE_R               {: RESULT = new ExpressionCall(e1, e2, e1left); :};
 
 exps ::= {: RESULT = new ExpressionsList(0); :}
     | exp:e {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}

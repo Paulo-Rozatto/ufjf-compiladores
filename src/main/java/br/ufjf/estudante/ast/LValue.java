@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,5 +20,9 @@ public class LValue extends Expression {
 
     public void addModifier(Expression exp) {
         modifiers.add(exp);
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

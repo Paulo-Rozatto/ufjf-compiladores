@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 public class CommandIf extends Command {
     private final Expression expression;
     private final Command then;
@@ -17,5 +19,9 @@ public class CommandIf extends Command {
         this.expression = expression;
         this.then = then;
         this.otherwise = otherwise;
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

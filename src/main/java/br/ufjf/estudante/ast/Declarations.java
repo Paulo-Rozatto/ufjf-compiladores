@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.HashMap;
 
 public class Declarations extends Node {
@@ -11,5 +13,9 @@ public class Declarations extends Node {
 
     public void add(String id, Type type) {
         innerVariables.put(id, type);
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

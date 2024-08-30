@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,5 +14,9 @@ public class ReturnTypes extends Node {
 
     public void add(Type type) {
         types.add(type);
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

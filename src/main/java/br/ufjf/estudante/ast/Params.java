@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import br.ufjf.estudante.visitor.Visitor;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,5 +14,9 @@ public class Params extends Node {
 
     public void add(String id, Type type) {
         params.put(id, type);
+    }
+
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }
