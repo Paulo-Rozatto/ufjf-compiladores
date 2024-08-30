@@ -16,6 +16,10 @@ public class ExpressionsList extends Node {
         expressions.add(expression);
     }
 
+    public List<Expression> getExpressions() {
+        return expressions;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }

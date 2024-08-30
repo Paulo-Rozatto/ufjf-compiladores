@@ -33,16 +33,67 @@ import br.ufjf.estudante.ast.ReturnTypes;
 import br.ufjf.estudante.ast.Type;
 import br.ufjf.estudante.ast.TypeCustom;
 import br.ufjf.estudante.ast.TypePrimitive;
+import br.ufjf.estudante.util.Pair;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class VisitorInterpreter implements Visitor {
+    private final Stack<Map<String, Pair<Type, Object>>> enviroments = new Stack<>();
+    private Map<String, Definition> definitionMap;
+
     @Override
     public void visit(CommandAttribution node) {
 
     }
 
     @Override
-    public void visit(CommandCall node) {
+    public void visit(CommandCall call) {
+        System.out.println("CommandCall");
+        Definition def = definitionMap.get(call.getId());
 
+        if (def == null) {
+            throw new RuntimeException("Função não declarada! " + call.getId());
+        }
+
+        if (def.getClass() != Function.class) {
+            System.out.println(call.getId() + " não é uma função!");
+            throw new RuntimeException(call.getId() + " não é uma função!");
+        }
+
+        Function function = (Function) def;
+        Map<String, Pair<Type, Object>> env = new HashMap<>();
+
+        if (function.getParams() != null) {
+            if (call.getParams() == null || function.getParams().size() != call.getParams().getExpressions().size()) {
+                throw new RuntimeException(call.getId() + " possui erro na quantidade de parâmetros");
+            }
+
+            List<String> paramIds = function.getParams().keySet().stream().toList();
+            List<Type> paramTypes = function.getParams().values().stream().toList();
+            List<Expression> paramExps = call.getParams().getExpressions();
+
+            for (int i = 0; i < function.getParams().size(); i++) {
+                String id = paramIds.get(i);
+                Type type = paramTypes.get(i);
+                Expression exp = paramExps.get(i);
+
+                exp.accept(this);
+
+                env.put(id, new Pair<>(type, exp.evaluate()));
+            }
+        }
+
+        enviroments.add(env);
+
+        // todo: consertar compilacao
+        // todo: pegar variaveis de retorno
+
+        call.accept(this);
+
+        enviroments.pop();
     }
 
     @Override
@@ -92,12 +143,30 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(Definition node) {
+        System.out.println("Definition");
 
+//        if (node.getClass() == Data.class) {
+//            return;
+//        }
+//
+//        node.accept(this);
     }
 
     @Override
     public void visit(DefinitionsList node) {
+        System.out.println("DefinitionsList!");
+        definitionMap = node.getDefinitionMap();
 
+        Definition main = definitionMap.get("main");
+
+        if (main == null) {
+            System.out.println("Warning: Programa não têm main!");
+        } else if (main.getClass() != Function.class) {
+            System.out.println("Error: main não é uma função!");
+        } else {
+            CommandCall mainCall = new CommandCall("main", null, null, main.getLine());
+            mainCall.accept(this);
+        }
     }
 
     @Override
@@ -112,7 +181,7 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(ExpressionCall node) {
-
+        System.out.println("ExpressionCall");
     }
 
     @Override
@@ -177,7 +246,8 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(Program node) {
-
+        System.out.println("Program");
+        node.getDefList().accept(this);
     }
 
     @Override

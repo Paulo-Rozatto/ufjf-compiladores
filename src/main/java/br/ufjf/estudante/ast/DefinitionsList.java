@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefinitionsList extends Node {
-    private final Map<String, Definition> defList = new HashMap<>();
+    private final Map<String, Definition> definitionMap = new HashMap<>();
 
     public DefinitionsList(int line) {
         super(line);
@@ -14,17 +14,16 @@ public class DefinitionsList extends Node {
 
     public DefinitionsList(Definition d, int line) {
         super(line);
-        defList.put(d.getId(), d);
+        definitionMap.put(d.getId(), d);
     }
 
     public void add(Definition d) {
-        defList.put(d.getId(), d);
+        definitionMap.put(d.getId(), d);
     }
 
-    public Definition get(int i) {
-        return defList.get(i);
+    public Map<String, Definition> getDefinitionMap() {
+        return definitionMap;
     }
-
 
     public void accept(Visitor v) {
         v.visit(this);

@@ -114,7 +114,7 @@ cmd ::= CURLY_L cmdList:c CURLY_R                                               
     | PRINT exp:e SEMICOLON                                                     {: RESULT = new CommandPrint(e, eleft); :}
     | RETURN exps:e SEMICOLON                                                   {: RESULT = new CommandReturn(e, eleft); :}
     | lvalue:l ATTRIBUTION exp:e SEMICOLON                                      {: RESULT = new CommandAttribution(l, e, lleft); :}
-    | IDENTIFIER ROUND_L exps:e ROUND_R retIds:r SEMICOLON                      {: RESULT = new CommandCall(e, r, eleft); :};
+    | IDENTIFIER:i ROUND_L exps:e ROUND_R retIds:r SEMICOLON                      {: RESULT = new CommandCall(i, e, r, eleft); :};
 
 lvalue ::= IDENTIFIER:i                                                         {: RESULT = new LValue(i, ileft); :}
     | lvalue:l SQUARE_L exp:e SQUARE_R                                          {: RESULT = l; RESULT.addModifier(e); :}

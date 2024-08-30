@@ -2,6 +2,9 @@ package br.ufjf.estudante.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
+import java.util.Map;
+import java.util.Set;
+
 public class Function extends Definition {
     private final String id;
     private final Params params;
@@ -19,6 +22,18 @@ public class Function extends Definition {
     @Override
     public String getId() {
         return this.id;
+    }
+
+    public Map<String, Type> getParams() {
+        return params.getMap();
+    }
+
+    public ReturnTypes getReturnTypes() {
+        return returnTypes;
+    }
+
+    public CommandsList getCommandsList() {
+        return commandsList;
     }
 
     public void accept(Visitor v) {

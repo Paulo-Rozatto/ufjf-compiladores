@@ -14,8 +14,8 @@ public class Program extends Node {
         defList.add(d);
     }
 
-    public Definition get(int i) {
-        return defList.get(i);
+    public DefinitionsList getDefList() {
+        return defList;
     }
 
     public void accept(Visitor v) {

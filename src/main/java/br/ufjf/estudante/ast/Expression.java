@@ -10,4 +10,6 @@ public abstract class Expression extends Node {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    public abstract Object evaluate();
 }

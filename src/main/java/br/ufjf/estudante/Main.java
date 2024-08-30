@@ -5,7 +5,10 @@
 
 package br.ufjf.estudante;
 
+import br.ufjf.estudante.ast.Node;
+import br.ufjf.estudante.ast.Program;
 import br.ufjf.estudante.tokens.TokenType;
+import br.ufjf.estudante.visitor.VisitorInterpreter;
 import de.jflex.Lexer;
 import java_cup.runtime.Scanner;
 import java_cup.runtime.Symbol;
@@ -37,7 +40,15 @@ public class Main {
             System.out.printf("%d tokens lidos.\n", lexer.getTokensSize());
             Scanner scanner = new Lexer(new FileReader(args[0]));
             Parser p = new Parser(scanner);
-            p.parse();
+            Program prog = (Program)(p.parse().value);
+
+//            if (!p.isGood()) {
+//                throw new Exception("Error no parser!");
+//            }
+
+            VisitorInterpreter interpreter = new VisitorInterpreter();
+            prog.accept(interpreter);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -16,6 +16,10 @@ public class Params extends Node {
         params.put(id, type);
     }
 
+    public Map<String, Type> getMap() {
+        return params;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
