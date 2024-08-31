@@ -11,4 +11,9 @@ public class LiteralNull extends Expression {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    @Override
+    public Object evaluate() {
+        return null;
+    }
 }

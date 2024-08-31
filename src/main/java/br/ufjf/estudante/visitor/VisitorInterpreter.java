@@ -88,7 +88,6 @@ public class VisitorInterpreter implements Visitor {
 
         enviroments.add(env);
 
-        // todo: consertar compilacao
         // todo: pegar variaveis de retorno
 
         call.accept(this);
