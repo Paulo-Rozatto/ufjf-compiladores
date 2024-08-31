@@ -142,7 +142,23 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(CommandIterate node) {
+    public void visit(CommandIterate iterate) {
+        Literal exp = iterate.getExpression().evaluate();
+
+        if (exp.getClass() != LiteralInt.class) {
+            throw new RuntimeException("Iterate espera um inteiro.");
+        }
+
+        int n = ((LiteralInt) exp).getValue();
+
+        // nao especifica que negativo tem que ser erro
+        if (n <= 0) {
+            return;
+        }
+
+        for (int i = 0; i < n; i++) {
+            iterate.getCommand().accept(this);
+        }
 
     }
 

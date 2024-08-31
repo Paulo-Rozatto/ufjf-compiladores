@@ -12,6 +12,14 @@ public class CommandIterate extends Command {
         this.command = command;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public Command getCommand() {
+        return command;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
