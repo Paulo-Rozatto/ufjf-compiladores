@@ -42,13 +42,17 @@ import java.util.Map;
 import java.util.Stack;
 
 public class VisitorInterpreter implements Visitor {
-    private final Stack<Map<String, Pair<Type, Object>>> enviroments = new Stack<>();
+    private final Stack<Map<String, Pair<Type, Literal>>> enviroments = new Stack<>();
     private Map<String, Definition> definitionMap;
     private boolean isReturn = false;
 
     @Override
-    public void visit(CommandAttribution node) {
-
+    public void visit(CommandAttribution attribution) {
+        String var = attribution.getlValue().getId();
+        Expression expression = attribution.getExpression();
+        expression.accept(this);
+        Literal literal = expression.evaluate();
+        enviroments.peek().put(var, new Pair<>(literal.getType(), literal));
     }
 
     @Override
@@ -66,7 +70,7 @@ public class VisitorInterpreter implements Visitor {
         }
 
         Function function = (Function) def;
-        Map<String, Pair<Type, Object>> env = new HashMap<>();
+        Map<String, Pair<Type, Literal>> env = new HashMap<>();
 
         if (function.getParams() != null) {
             if (call.getParams() == null || function.getParams().size() != call.getParams().getExpressions().size()) {
@@ -117,8 +121,8 @@ public class VisitorInterpreter implements Visitor {
 
             for (int i = 0; i < returnVars.size(); i++) {
                 String varId = returnVars.get(i);
-                Type varType = returnTypes.getTypes().get(i);
-                Object value = env.get(i + "return");
+//                Type varType = returnTypes.getTypes().get(i);
+                Pair<Type, Literal> value = env.get(i + "return");
 
                 if (value == null) {
                     throw new RuntimeException(
@@ -126,14 +130,16 @@ public class VisitorInterpreter implements Visitor {
                     );
                 }
 
-                enviroments.peek().put(varId, new Pair<>(varType, value));
+                enviroments.peek().put(varId, value);
             }
         }
     }
 
     @Override
     public void visit(CommandIf node) {
-        LiteralBool exp = (LiteralBool) node.getExpression().evaluate();
+        Expression expression = node.getExpression();
+        expression.accept(this);
+        LiteralBool exp = (LiteralBool) expression.evaluate();
         if (exp.getValue()) {
             node.getThen().accept(this);
         } else if (node.getOtherwise() != null) {
@@ -143,7 +149,9 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandIterate iterate) {
-        Literal exp = iterate.getExpression().evaluate();
+        Expression expression = iterate.getExpression();
+        expression.accept(this);
+        Literal exp = expression.evaluate();
 
         if (exp.getClass() != LiteralInt.class) {
             throw new RuntimeException("Iterate espera um inteiro.");
@@ -171,7 +179,9 @@ public class VisitorInterpreter implements Visitor {
     public void visit(CommandPrint print) {
         System.out.print("Print: ");
 
-        Object value = print.getExpression().evaluate();
+        Expression expression = print.getExpression();
+        expression.accept(this);
+        Object value = expression.evaluate();
         System.out.println(value);
     }
 
@@ -184,7 +194,9 @@ public class VisitorInterpreter implements Visitor {
     public void visit(CommandReturn node) {
         List<Expression> returns = node.getReturns().getExpressions();
         for (int i = 0; i < returns.size(); i++) {
-            Literal value = returns.get(i).evaluate();
+            Expression expression = returns.get(i);
+            expression.accept(this);
+            Literal value = expression.evaluate();
             enviroments.peek().put(i + "return", new Pair<>(value.getType(), value));
         }
         isReturn = true;
@@ -262,7 +274,7 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(ExpressionNew node) {
+    public void visit(ExpressionNew expNew) {
 
     }
 
@@ -341,5 +353,9 @@ public class VisitorInterpreter implements Visitor {
     @Override
     public void visit(TypePrimitive node) {
 
+    }
+
+    public Map<String, Pair<Type, Literal>> getEnv() {
+        return enviroments.peek();
     }
 }

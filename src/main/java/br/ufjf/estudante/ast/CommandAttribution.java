@@ -12,6 +12,14 @@ public class CommandAttribution extends Command {
         this.expression = expression;
     }
 
+    public LValue getlValue() {
+        return lValue;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
