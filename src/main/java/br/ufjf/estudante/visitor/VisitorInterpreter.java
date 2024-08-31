@@ -44,6 +44,7 @@ import java.util.Stack;
 public class VisitorInterpreter implements Visitor {
     private final Stack<Map<String, Pair<Type, Object>>> enviroments = new Stack<>();
     private Map<String, Definition> definitionMap;
+    private boolean isReturn = false;
 
     @Override
     public void visit(CommandAttribution node) {
@@ -96,6 +97,7 @@ public class VisitorInterpreter implements Visitor {
         enviroments.add(env);
 
         function.accept(this);
+        isReturn = false;
 
         env = enviroments.pop();
 
@@ -116,7 +118,6 @@ public class VisitorInterpreter implements Visitor {
             for (int i = 0; i < returnVars.size(); i++) {
                 String varId = returnVars.get(i);
                 Type varType = returnTypes.getTypes().get(i);
-                // todo: na execucao de um tipo return, temos que guardar os retornos de acordo com o padrao abaixo
                 Object value = env.get(i + "return");
 
                 if (value == null) {
@@ -132,8 +133,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandIf node) {
-        // todo: corrigir chaves
-
         LiteralBool exp = (LiteralBool) node.getExpression().evaluate();
         if (exp.getValue()) {
             node.getThen().accept(this);
@@ -154,7 +153,7 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandPrint print) {
-        System.out.println("Print");
+        System.out.print("Print: ");
 
         Object value = print.getExpression().evaluate();
         System.out.println(value);
@@ -172,11 +171,18 @@ public class VisitorInterpreter implements Visitor {
             Literal value = returns.get(i).evaluate();
             enviroments.peek().put(i + "return", new Pair<>(value.getType(), value));
         }
+        isReturn = true;
     }
 
     @Override
-    public void visit(CommandsList node) {
-
+    public void visit(CommandsList commandsList) {
+        System.out.println("CommandList");
+        for (Command command : commandsList.getCommands()) {
+            if (isReturn) {
+                break;
+            }
+            command.accept(this);
+        }
     }
 
     @Override
@@ -252,16 +258,7 @@ public class VisitorInterpreter implements Visitor {
     @Override
     public void visit(Function function) {
         System.out.println("Function: " + function.getId());
-        for (Command command : function.getCommandsList().getCommands()) {
-            command.accept(this);
-            if (command.getClass() == CommandReturn.class) {
-//                List<Expression> returns = ((CommandReturn) command).getReturns().getExpressions();
-//                for(int i =0; i < returns.size(); i++) {
-//                    enviroments.peek().put(i + "return", returns.get(i).evaluate());
-//                }
-                break;
-            }
-        }
+        function.getCommandsList().accept(this);
     }
 
     @Override
