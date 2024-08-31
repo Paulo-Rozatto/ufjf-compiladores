@@ -10,7 +10,11 @@
 --nlines  :  5
 --i  :  0
 
-main(){
+main() {
+    print 1 < 2;
+}
+
+m(){
    nlines = 5;
    i = nlines;
    iterate(nlines){

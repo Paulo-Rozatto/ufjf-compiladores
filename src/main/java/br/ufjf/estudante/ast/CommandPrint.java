@@ -10,6 +10,10 @@ public class CommandPrint extends Command {
         this.expression = expression;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }

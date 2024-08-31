@@ -11,5 +11,5 @@ public abstract class Expression extends Node {
         v.visit(this);
     }
 
-    public abstract Object evaluate();
+    public abstract Literal evaluate();
 }

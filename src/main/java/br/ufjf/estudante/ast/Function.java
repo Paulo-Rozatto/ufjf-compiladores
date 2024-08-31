@@ -3,7 +3,6 @@ package br.ufjf.estudante.ast;
 import br.ufjf.estudante.visitor.Visitor;
 
 import java.util.Map;
-import java.util.Set;
 
 public class Function extends Definition {
     private final String id;
@@ -25,7 +24,7 @@ public class Function extends Definition {
     }
 
     public Map<String, Type> getParams() {
-        return params.getMap();
+        return params == null ? null : params.getMap();
     }
 
     public ReturnTypes getReturnTypes() {

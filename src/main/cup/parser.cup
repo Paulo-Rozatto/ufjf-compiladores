@@ -127,7 +127,7 @@ ids ::= IDENTIFIER:i                                                            
     | ids:ids COMMA IDENTIFIER:i                                                {: RESULT = ids; RESULT.add(i); :};
 
 exp ::= exp:e1 AND exp:e2                                                       {: RESULT = new ExpressionBoolean("&&", e1, e2, e1left); :}
-    | exp:e1 SMALLER exp:e2                                                     {: RESULT = new ExpressionBoolean("||", e1, e2, e1left); :}
+    | exp:e1 SMALLER exp:e2                                                     {: RESULT = new ExpressionArithmetic("<", e1, e2, e1left); :}
     | exp:e1 EQUALS exp:e2                                                      {: RESULT = new ExpressionBoolean("==", e1, e2, e1left); :}
     | exp:e1 NOT_EQUALS exp:e2                                                  {: RESULT = new ExpressionBoolean("!=", e1, e2, e1left); :}
     | exp:e1 ADDITION exp:e2                                                    {: RESULT = new ExpressionArithmetic("+", e1, e2, e1left); :}
@@ -136,7 +136,7 @@ exp ::= exp:e1 AND exp:e2                                                       
     | exp:e1 DIVISION exp:e2                                                    {: RESULT = new ExpressionArithmetic("/", e1, e2, e1left); :}
     | exp:e1 MOD exp:e2                                                         {: RESULT = new ExpressionArithmetic("%", e1, e2, e1left); :}
     | NOT exp:e2                                                                {: RESULT = new ExpressionBoolean("!", null, e2, e2left); :}
-    | SUBTRACTION exp:e2                                                        {: RESULT = new ExpressionArithmetic("!", null, e2, e2left); :}
+    | SUBTRACTION exp:e2                                                        {: RESULT = new ExpressionArithmetic("-", null, e2, e2left); :}
     | LIT_BOOL:b                                                                {: RESULT = new LiteralBool(b, bleft); :}
     | LIT_NULL:l                                                                {: RESULT = new LiteralNull(lleft); :}
     | LIT_INT:l                                                                 {: RESULT = new LiteralInt(l, lleft); :}

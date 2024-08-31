@@ -19,7 +19,15 @@ public class ExpressionBoolean extends Expression {
     }
 
     @Override
-    public Object evaluate() {
-        return null;
+    public Literal evaluate() {
+
+        return switch (op) {
+            case "!" -> right.evaluate().not();
+            case "&&" -> left.evaluate().and(right.evaluate());
+            case "==" -> left.evaluate().equals(right.evaluate());
+            case "!=" -> left.evaluate().notEquals(right.evaluate());
+//            case "||" -> left.evaluate().or(right.evaluate());
+            default -> throw new RuntimeException("Operador booleano desconhecido: " + op);
+        };
     }
 }

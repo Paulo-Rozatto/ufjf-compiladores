@@ -2,7 +2,7 @@ package br.ufjf.estudante.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
-public class LiteralNull extends Expression {
+public class LiteralNull extends Literal {
 
     public LiteralNull(int line) {
         super(line);
@@ -13,7 +13,12 @@ public class LiteralNull extends Expression {
     }
 
     @Override
-    public Object evaluate() {
-        return null;
+    public Literal equals(Literal arg) {
+        return new LiteralBool(arg.getClass() == LiteralNull.class, lineNumber);
+    }
+
+    @Override
+    public Literal notEquals(Literal arg) {
+        return new LiteralBool(arg.getClass() != LiteralNull.class, lineNumber);
     }
 }

@@ -51,7 +51,7 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandCall call) {
-        System.out.println("CommandCall");
+        System.out.println("CommandCall: " + call.getId());
         Definition def = definitionMap.get(call.getId());
 
         if (def == null) {
@@ -94,7 +94,7 @@ public class VisitorInterpreter implements Visitor {
 
         enviroments.add(env);
 
-        call.accept(this);
+        function.accept(this);
 
         env = enviroments.pop();
 
@@ -145,8 +145,11 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(CommandPrint node) {
+    public void visit(CommandPrint print) {
+        System.out.println("Print");
 
+        Object value = print.getExpression().evaluate();
+        System.out.println(value);
     }
 
     @Override
@@ -203,8 +206,10 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(ExpressionArithmetic node) {
-
+    public void visit(ExpressionArithmetic expression) {
+//        System.out.println("ExpressionArithmetic " + expression.getOp());
+//        Object e1 = expression.getLeft().evaluate();
+//        Object e2 = expression.getRight().evaluate();
     }
 
     @Override
@@ -233,8 +238,11 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(Function node) {
-
+    public void visit(Function function) {
+        System.out.println("Function: " + function.getId());
+        for (Command command : function.getCommandsList().getCommands()) {
+            command.accept(this);
+        }
     }
 
     @Override

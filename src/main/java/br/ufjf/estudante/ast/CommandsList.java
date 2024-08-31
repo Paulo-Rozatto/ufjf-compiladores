@@ -16,6 +16,10 @@ public class CommandsList extends Command {
         commands.add(command);
     }
 
+    public List<Command> getCommands() {
+        return commands;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }

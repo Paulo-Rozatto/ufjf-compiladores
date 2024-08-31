@@ -23,7 +23,7 @@ public class ExpressionNew extends Expression {
     }
 
     @Override
-    public Object evaluate() {
+    public Literal evaluate() {
         return null;
     }
 }
