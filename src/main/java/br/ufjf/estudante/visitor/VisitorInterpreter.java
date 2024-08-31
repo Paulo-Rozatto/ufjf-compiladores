@@ -68,7 +68,13 @@ public class VisitorInterpreter implements Visitor {
 
         if (function.getParams() != null) {
             if (call.getParams() == null || function.getParams().size() != call.getParams().getExpressions().size()) {
-                throw new RuntimeException(call.getId() + " possui erro na quantidade de parâmetros");
+                int expectedNumberSizes = function.getParams().size();
+                int gotNumberSizes = call.getParams() == null ? 0 : call.getParams().getExpressions().size();
+
+                throw new RuntimeException(String.format(
+                        "Esperava-se %d variaveis de retorno, mas %d foram obtidas.",
+                        expectedNumberSizes, gotNumberSizes
+                ));
             }
 
             List<String> paramIds = function.getParams().keySet().stream().toList();
@@ -88,11 +94,39 @@ public class VisitorInterpreter implements Visitor {
 
         enviroments.add(env);
 
-        // todo: pegar variaveis de retorno
-
         call.accept(this);
 
-        enviroments.pop();
+        env = enviroments.pop();
+
+        List<String> returnVars = call.getReturnVars();
+        if (returnVars != null && !returnVars.isEmpty()) {
+            ReturnTypes returnTypes = function.getReturnTypes();
+
+            if (returnTypes == null || returnTypes.getTypes().size() != returnVars.size()) {
+                int expectedNumberSizes = returnTypes == null ? 0 : returnTypes.getTypes().size();
+                int gotNumberSizes = returnVars.size();
+
+                throw new RuntimeException(String.format(
+                        "Esperava-se %d variaveis de retorno, mas %d foram obtidas.",
+                        expectedNumberSizes, gotNumberSizes
+                ));
+            }
+
+            for (int i = 0; i < returnVars.size(); i++) {
+                String varId = returnVars.get(i);
+                Type varType = returnTypes.getTypes().get(i);
+                // todo: na execucao de um tipo return, temos que guardar os retornos de acordo com o padrao abaixo
+                Object value = env.get("return" + i);
+
+                if (value == null) {
+                    throw new RuntimeException(
+                            String.format("Faltando retorno %d, variavel %s", i + 1, varId)
+                    );
+                }
+
+                enviroments.peek().put(varId, new Pair<>(varType, value));
+            }
+        }
     }
 
     @Override

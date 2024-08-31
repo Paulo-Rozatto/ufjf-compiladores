@@ -16,6 +16,10 @@ public class ReturnTypes extends Node {
         types.add(type);
     }
 
+    public List<Type> getTypes() {
+        return types;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
