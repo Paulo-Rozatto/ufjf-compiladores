@@ -21,6 +21,7 @@ import br.ufjf.estudante.ast.ExpressionNew;
 import br.ufjf.estudante.ast.ExpressionsList;
 import br.ufjf.estudante.ast.Function;
 import br.ufjf.estudante.ast.LValue;
+import br.ufjf.estudante.ast.Literal;
 import br.ufjf.estudante.ast.LiteralBool;
 import br.ufjf.estudante.ast.LiteralChar;
 import br.ufjf.estudante.ast.LiteralFloat;
@@ -116,7 +117,7 @@ public class VisitorInterpreter implements Visitor {
                 String varId = returnVars.get(i);
                 Type varType = returnTypes.getTypes().get(i);
                 // todo: na execucao de um tipo return, temos que guardar os retornos de acordo com o padrao abaixo
-                Object value = env.get("return" + i);
+                Object value = env.get(i + "return");
 
                 if (value == null) {
                     throw new RuntimeException(
@@ -159,7 +160,11 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandReturn node) {
-
+        List<Expression> returns = node.getReturns().getExpressions();
+        for (int i = 0; i < returns.size(); i++) {
+            Literal value = returns.get(i).evaluate();
+            enviroments.peek().put(i + "return", new Pair<>(value.getType(), value));
+        }
     }
 
     @Override
@@ -242,6 +247,13 @@ public class VisitorInterpreter implements Visitor {
         System.out.println("Function: " + function.getId());
         for (Command command : function.getCommandsList().getCommands()) {
             command.accept(this);
+            if (command.getClass() == CommandReturn.class) {
+//                List<Expression> returns = ((CommandReturn) command).getReturns().getExpressions();
+//                for(int i =0; i < returns.size(); i++) {
+//                    enviroments.peek().put(i + "return", returns.get(i).evaluate());
+//                }
+                break;
+            }
         }
     }
 

@@ -12,6 +12,10 @@ public class LiteralNull extends Literal {
         v.visit(this);
     }
 
+    public Type getType() {
+        return null;
+    }
+
     @Override
     public Literal equals(Literal arg) {
         return new LiteralBool(arg.getClass() == LiteralNull.class, lineNumber);

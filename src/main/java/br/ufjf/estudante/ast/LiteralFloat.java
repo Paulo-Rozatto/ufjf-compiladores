@@ -18,6 +18,10 @@ public class LiteralFloat extends Literal {
         return value;
     }
 
+    public Type getType() {
+        return new TypePrimitive<Float>(lineNumber);
+    }
+
     @Override
     public Literal equals(Literal arg) {
         if (arg.getClass() == LiteralFloat.class) {

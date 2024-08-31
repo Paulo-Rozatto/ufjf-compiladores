@@ -68,6 +68,10 @@ public class LiteralBool extends Literal {
         return super.add(arg);
     }
 
+    public Type getType() {
+        return new TypePrimitive<Boolean>(lineNumber);
+    }
+
     @Override
     public String toString() {
         return value.toString();

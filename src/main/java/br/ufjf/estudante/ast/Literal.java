@@ -10,6 +10,8 @@ public abstract class Literal extends Expression {
         return null;
     }
 
+    abstract public Type getType();
+
     public Literal equals(Literal arg) {
         throw new RuntimeException("Operação não suportada");
     }

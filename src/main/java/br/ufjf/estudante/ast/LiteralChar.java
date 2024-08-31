@@ -2,10 +2,12 @@ package br.ufjf.estudante.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
-public class LiteralChar extends Literal {
-    private final char value;
+import java.util.Objects;
 
-    public LiteralChar(char value, int line) {
+public class LiteralChar extends Literal {
+    private final String value;
+
+    public LiteralChar(String value, int line) {
         super(line);
         this.value = value;
     }
@@ -14,8 +16,12 @@ public class LiteralChar extends Literal {
         v.visit(this);
     }
 
-    public char getValue() {
+    public String getValue() {
         return value;
+    }
+
+    public Type getType() {
+        return new TypePrimitive<Character>(lineNumber);
     }
 
     @Override
@@ -31,7 +37,7 @@ public class LiteralChar extends Literal {
     @Override
     public Literal equals(Literal arg) {
         if (arg.getClass() == LiteralChar.class) {
-            boolean result = value == ((LiteralChar) arg).getValue();
+            boolean result = Objects.equals(value, ((LiteralChar) arg).getValue());
             return new LiteralBool(result, lineNumber);
         }
 
@@ -41,7 +47,7 @@ public class LiteralChar extends Literal {
     @Override
     public Literal notEquals(Literal arg) {
         if (arg.getClass() == LiteralChar.class) {
-            boolean result = value != ((LiteralChar) arg).getValue();
+            boolean result = !Objects.equals(value, ((LiteralChar) arg).getValue());
             return new LiteralBool(result, lineNumber);
         }
 

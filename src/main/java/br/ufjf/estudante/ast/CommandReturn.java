@@ -10,6 +10,10 @@ public class CommandReturn extends Command {
         this.returns = returns;
     }
 
+    public ExpressionsList getReturns() {
+        return returns;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
