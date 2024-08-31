@@ -132,7 +132,14 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandIf node) {
+        // todo: corrigir chaves
 
+        LiteralBool exp = (LiteralBool) node.getExpression().evaluate();
+        if (exp.getValue()) {
+            node.getThen().accept(this);
+        } else if (node.getOtherwise() != null) {
+            node.getOtherwise().accept(this);
+        }
     }
 
     @Override

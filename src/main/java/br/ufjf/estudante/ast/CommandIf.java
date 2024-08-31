@@ -21,6 +21,18 @@ public class CommandIf extends Command {
         this.otherwise = otherwise;
     }
 
+    public Command getThen() {
+        return then;
+    }
+
+    public Command getOtherwise() {
+        return otherwise;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
     public void accept(Visitor v) {
         v.visit(this);
     }
