@@ -19,7 +19,7 @@ public class LiteralInt extends Literal {
     }
 
     public Type getType() {
-        return new TypePrimitive<Integer>(lineNumber);
+        return new TypePrimitive(this.getClass(), lineNumber);
     }
 
     @Override
@@ -104,7 +104,6 @@ public class LiteralInt extends Literal {
         }
         return super.add(arg);
     }
-
 
 
     @Override

@@ -21,7 +21,7 @@ public class LiteralChar extends Literal {
     }
 
     public Type getType() {
-        return new TypePrimitive<Character>(lineNumber);
+        return new TypePrimitive(this.getClass(), lineNumber);
     }
 
     @Override

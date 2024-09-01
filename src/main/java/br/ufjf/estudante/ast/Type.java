@@ -3,7 +3,7 @@ package br.ufjf.estudante.ast;
 import br.ufjf.estudante.visitor.Visitor;
 
 public abstract class Type extends Node {
-    protected int dimensions;
+    private int dimensions;
 
     public Type(int line) {
         super(line);
@@ -12,6 +12,10 @@ public abstract class Type extends Node {
 
     public void increaseDimensions() {
         dimensions += 1;
+    }
+
+    public int getDimensions() {
+        return dimensions;
     }
 
     public void accept(Visitor v) {

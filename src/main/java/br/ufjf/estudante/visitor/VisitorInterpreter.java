@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Stack;
 
 public class VisitorInterpreter implements Visitor {
-    private final Stack<Map<String, Pair<Type, Literal>>> enviroments = new Stack<>();
+    private final Stack<Map<String, Pair<Type, Literal>>> environments = new Stack<>();
     private Map<String, Definition> definitionMap;
     private boolean isReturn = false;
 
@@ -52,7 +52,9 @@ public class VisitorInterpreter implements Visitor {
         Expression expression = attribution.getExpression();
         expression.accept(this);
         Literal literal = expression.evaluate();
-        enviroments.peek().put(var, new Pair<>(literal.getType(), literal));
+//        environments.peek().put(var, new Pair<>(literal.getType(), literal));
+        attribution.getlValue().accept(this);
+        attribution.getlValue().set(literal);
     }
 
     @Override
@@ -98,12 +100,12 @@ public class VisitorInterpreter implements Visitor {
             }
         }
 
-        enviroments.add(env);
+        environments.add(env);
 
         function.accept(this);
         isReturn = false;
 
-        env = enviroments.pop();
+        env = environments.pop();
 
         List<String> returnVars = call.getReturnVars();
         if (returnVars != null && !returnVars.isEmpty()) {
@@ -130,7 +132,7 @@ public class VisitorInterpreter implements Visitor {
                     );
                 }
 
-                enviroments.peek().put(varId, value);
+                environments.peek().put(varId, value);
             }
         }
     }
@@ -197,7 +199,7 @@ public class VisitorInterpreter implements Visitor {
             Expression expression = returns.get(i);
             expression.accept(this);
             Literal value = expression.evaluate();
-            enviroments.peek().put(i + "return", new Pair<>(value.getType(), value));
+            environments.peek().put(i + "return", new Pair<>(value.getType(), value));
         }
         isReturn = true;
     }
@@ -275,7 +277,8 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(ExpressionNew expNew) {
-
+//        expNew.accept(this);
+        expNew.evaluate();
     }
 
     @Override
@@ -356,6 +359,6 @@ public class VisitorInterpreter implements Visitor {
     }
 
     public Map<String, Pair<Type, Literal>> getEnv() {
-        return enviroments.peek();
+        return environments.peek();
     }
 }

@@ -19,7 +19,7 @@ public class LiteralFloat extends Literal {
     }
 
     public Type getType() {
-        return new TypePrimitive<Float>(lineNumber);
+        return new TypePrimitive(this.getClass(), lineNumber);
     }
 
     @Override
