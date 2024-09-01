@@ -1,5 +1,7 @@
 package br.ufjf.estudante.ast;
 
+import java.lang.reflect.Array;
+
 public class LiteralArray extends Literal {
     private final Object array;
     private final int dimensions;
@@ -10,6 +12,23 @@ public class LiteralArray extends Literal {
         this.array = array;
         this.dimensions = dimensions;
         this.lastSize = lastSize;
+    }
+
+    // Método auxiliar para construir a string do array
+    private static void arrayToStringHelper(Object array, StringBuilder sb) {
+        if (array != null && array.getClass().isArray()) {
+            sb.append("[");
+            int length = Array.getLength(array);
+            for (int i = 0; i < length; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                arrayToStringHelper(Array.get(array, i), sb);
+            }
+            sb.append("]");
+        } else {
+            sb.append(array);
+        }
     }
 
     public Object getArray() {
@@ -27,5 +46,11 @@ public class LiteralArray extends Literal {
     @Override
     public Type getType() {
         return new TypePrimitive(this.getClass(), lineNumber);
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        arrayToStringHelper(array, sb);
+        return sb.toString();
     }
 }

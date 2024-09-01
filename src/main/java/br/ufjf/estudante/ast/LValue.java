@@ -48,28 +48,27 @@ public class LValue extends Expression {
             return;
         }
 
-//        Object currentArray = array;
-//        for (int i = 0; i < indices.length - 1; i++) {
-//            currentArray = Array.get(currentArray, indices[i]);
-//        }
-//        Array.set(currentArray, indices[indices.length - 1], value)
-
-        System.out.println("Mod: " + id + " - " + modifiers);
-
         Pair<Type, Literal> ref = env.get(id);
-        Object currentArray = ((LiteralArray) ref.getSecond()).getArray();
-        int index = ((LiteralInt) modifiers.get(0)).getValue();
-//        for (Object modifier : modifiers) {
-//            if (modifier.getClass() == LiteralInt.class) {
-//                index = ((LiteralInt) modifier).getValue();
-//                currentArray = Array.get(currentArray, index);
-//            } else {
-//                throw new RuntimeException("Modificador invalido: " + modifier);
-//            }
-//        }
-//        System.out.println(currentArray + "[" + index + "] <- " + value.getClass());
-        Array.set(currentArray, index, value);
+        Object currentObject = ((LiteralArray) ref.getSecond()).getArray();
+        Object modifier;
 
+        for (int i = 0; i < modifiers.size() - 1; i++) {
+            modifier = modifiers.get(i);
+
+            if (modifier.getClass() == LiteralInt.class) {
+                currentObject = Array.get(currentObject, ((LiteralInt) modifier).getValue());
+            } else {
+                throw new RuntimeException("Modificador invalido: " + modifier);
+            }
+        }
+
+        int index = ((LiteralInt) modifiers.get(modifiers.size() - 1)).getValue();
+        if (value.getClass() == LiteralArray.class) {
+            Array.set(currentObject, index, ((LiteralArray) value).getArray());
+
+        } else {
+            Array.set(currentObject, index, value);
+        }
     }
 
 
@@ -89,10 +88,21 @@ public class LValue extends Expression {
             return var.getSecond();
         }
 
-        int index = ((LiteralInt) modifiers.get(0)).getValue();
         Object currentArray = ((LiteralArray) var.getSecond()).getArray();
+        for (Object modifier : modifiers) {
+            int index = ((LiteralInt) modifier).getValue();
+            currentArray = Array.get(currentArray, index);
 
-        return (Literal) Array.get(currentArray, index);
+        }
+
+        Object value = currentArray;
+
+        if (value.getClass().isArray()) {
+            // todo: remover esses parametros de dimensao nao usados
+            return new LiteralArray(value, 1, 1, 1);
+        }
+
+        return (Literal) value;
     }
 
     public String getId() {

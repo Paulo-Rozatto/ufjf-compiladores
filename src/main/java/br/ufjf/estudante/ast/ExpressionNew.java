@@ -37,15 +37,14 @@ public class ExpressionNew extends Expression {
         if (exp != null) {
             int size = ((LiteralInt) exp.evaluate()).getValue();
 
-            System.out.println(((TypePrimitive) type).getC());
-            Object array = Array.newInstance(((TypePrimitive) type).getC(), size); // Cria o array da primeira dimensão
+            Object array = Array.newInstance(((TypePrimitive) type).getC(), size);
 
             for (int i = 1; i < type.getDimensions(); i++) {
-                Object tempArray = Array.newInstance(array.getClass()); // Cria o próximo nível
-//                for (int j = 0; j < size; j++) {
-//                    Array.set(tempArray, j, array); // Configura cada elemento do array atual como uma referência ao array anterior
-//                }
-                array = tempArray; // Atualiza a referência para o novo array aninhado
+                Object tempArray = Array.newInstance(array.getClass(), size);
+                for (int j = 0; j < size; j++) {
+                    Array.set(tempArray, j, array);
+                }
+                array = tempArray;
             }
 
             return new LiteralArray(array, type.getDimensions(), size, lineNumber);
