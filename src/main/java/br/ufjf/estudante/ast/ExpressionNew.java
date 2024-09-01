@@ -1,12 +1,15 @@
 package br.ufjf.estudante.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
+import br.ufjf.estudante.visitor.VisitorInterpreter;
 
 import java.lang.reflect.Array;
+import java.util.Map;
 
 public class ExpressionNew extends Expression {
     private final Type type;
     private final Expression exp;
+    private Map<String, Definition> definitionMap = null;
 
     public ExpressionNew(Type type, int line) {
         super(line);
@@ -21,6 +24,9 @@ public class ExpressionNew extends Expression {
     }
 
     public void accept(Visitor v) {
+        if (v.getClass() == VisitorInterpreter.class) {
+            definitionMap = ((VisitorInterpreter) v).getDefinitions();
+        }
         v.visit(this);
     }
 
@@ -37,7 +43,7 @@ public class ExpressionNew extends Expression {
         if (exp != null) {
             int size = ((LiteralInt) exp.evaluate()).getValue();
 
-            Object array = Array.newInstance(((TypePrimitive) type).getC(), size);
+            Object array = Array.newInstance(type.getC(), size);
 
             for (int i = 1; i < type.getDimensions(); i++) {
                 Object tempArray = Array.newInstance(array.getClass(), size);
@@ -49,6 +55,26 @@ public class ExpressionNew extends Expression {
 
             return new LiteralArray(array, type.getDimensions(), size, lineNumber);
         }
-        return null;
+
+        if (type.getClass() == TypePrimitive.class) {
+            throw new RuntimeException("Instanciar primitivo é inválido");
+        }
+
+        if (definitionMap.isEmpty()) {
+            throw new RuntimeException("Definições estão vazias!");
+        }
+
+        TypeCustom customType = (TypeCustom) type;
+        Definition typeDefinition = definitionMap.get(customType.getId());
+
+        if (typeDefinition == null) {
+            throw new RuntimeException("Tipo '" + customType.getId() + "' inexistente");
+        }
+
+        if (typeDefinition.getClass() != Data.class) {
+            throw new RuntimeException(customType.getId() + " não é um tipo");
+        }
+
+        return new LiteralCustom(customType.getId(), ((Data) typeDefinition).getDeclarations(), lineNumber);
     }
 }

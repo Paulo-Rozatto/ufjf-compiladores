@@ -53,26 +53,42 @@ public class LValue extends Expression {
         }
 
         Pair<Type, Literal> ref = env.get(id);
-        Object currentObject = ((LiteralArray) ref.getSecond()).getArray();
+        Object currentObject = ref.getSecond();
         Object modifier;
 
+        // For para fazer acessos
         for (int i = 0; i < modifiers.size() - 1; i++) {
             modifier = modifiers.get(i);
 
-            if (modifier.getClass() == LiteralInt.class) {
+            if (modifier instanceof LiteralInt) {
+                if (currentObject instanceof LiteralArray) {
+                    currentObject = ((LiteralArray) currentObject).getArray();
+                }
                 currentObject = Array.get(currentObject, ((LiteralInt) modifier).getValue());
+            } else if (modifier instanceof String) {
+                currentObject = ((LiteralCustom) currentObject).getField((String) modifier).getSecond();
             } else {
                 throw new RuntimeException("Modificador invalido: " + modifier);
             }
         }
 
-        int index = ((LiteralInt) modifiers.get(modifiers.size() - 1)).getValue();
-        if (value.getClass() == LiteralArray.class) {
-            Array.set(currentObject, index, ((LiteralArray) value).getArray());
+        // Codigo repetido para o ultimo modifier para fazer escrita
+        modifier = modifiers.get(modifiers.size() - 1);
+        if (modifier instanceof LiteralInt) {
+            int index = ((LiteralInt) modifiers.get(modifiers.size() - 1)).getValue();
+            if (value.getClass() == LiteralArray.class) {
+                Array.set(currentObject, index, ((LiteralArray) value).getArray());
 
-        } else {
-            Array.set(currentObject, index, value);
+            } else {
+                if (currentObject instanceof LiteralArray) {
+                    currentObject = ((LiteralArray) currentObject).getArray();
+                }
+                Array.set(currentObject, index, value);
+            }
+        } else if (modifier instanceof String) {
+            ((LiteralCustom) currentObject).setField((String) modifier, value);
         }
+
     }
 
 
@@ -92,14 +108,22 @@ public class LValue extends Expression {
             return var.getSecond();
         }
 
-        Object currentArray = ((LiteralArray) var.getSecond()).getArray();
+        Object currentObject = var.getSecond();
         for (Object modifier : modifiers) {
-            int index = ((LiteralInt) modifier).getValue();
-            currentArray = Array.get(currentArray, index);
+            if (modifier instanceof LiteralInt) {
+                if (currentObject instanceof LiteralArray) {
+                    currentObject = ((LiteralArray) currentObject).getArray();
+                }
 
+                currentObject = Array.get(currentObject, ((LiteralInt) modifier).getValue());
+            } else if (modifier instanceof String) {
+                currentObject = ((LiteralCustom) currentObject).getField((String) modifier).getSecond();
+            } else {
+                throw new RuntimeException("Modificador invalido: " + modifier);
+            }
         }
 
-        Object value = currentArray;
+        Object value = currentObject;
 
         if (value.getClass().isArray()) {
             // todo: remover esses parametros de dimensao nao usados
@@ -112,4 +136,6 @@ public class LValue extends Expression {
     public String getId() {
         return id;
     }
+
+
 }

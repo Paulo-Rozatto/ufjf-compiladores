@@ -14,7 +14,6 @@ public class LiteralArray extends Literal {
         this.lastSize = lastSize;
     }
 
-    // Método auxiliar para construir a string do array
     private static void arrayToStringHelper(Object array, StringBuilder sb) {
         if (array != null && array.getClass().isArray()) {
             sb.append("[");

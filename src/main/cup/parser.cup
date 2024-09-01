@@ -101,7 +101,7 @@ btype ::= INT:i                                                                 
     | FLOAT:i                                                                   {: RESULT = new TypePrimitive(LiteralFloat.class, ileft); :}
     | CHAR:i                                                                    {: RESULT = new TypePrimitive(LiteralChar.class, ileft); :}
     | BOOL:i                                                                    {: RESULT = new TypePrimitive(LiteralBool.class, ileft); :}
-    | CUSTOM:i                                                                  {: RESULT = new TypeCustom(ileft); :};
+    | CUSTOM:i                                                                  {: RESULT = new TypeCustom(i, ileft); :};
 
 cmdList ::= cmdList:cl cmd:c                                                    {: RESULT = cl; RESULT.add(c); :}
     | cmd:c                                                                     {: RESULT = new CommandsList(cleft); RESULT.add(c); :};

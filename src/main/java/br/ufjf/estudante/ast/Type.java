@@ -18,6 +18,8 @@ public abstract class Type extends Node {
         return dimensions;
     }
 
+    public abstract Class<?> getC();
+
     public void accept(Visitor v) {
         v.visit(this);
     }

@@ -222,7 +222,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandsList commandsList) {
-        System.out.println("CommandList");
         for (Command command : commandsList.getCommands()) {
             if (isReturn) {
                 break;
@@ -243,20 +242,18 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(Definition node) {
-        System.out.println("Definition");
     }
 
     @Override
-    public void visit(DefinitionsList node) {
-        System.out.println("DefinitionsList!");
-        definitionMap = node.getDefinitionMap();
+    public void visit(DefinitionsList definitions) {
+        definitionMap = definitions.getDefinitionMap();
 
         Definition main = definitionMap.get("main");
 
         if (main == null) {
-            System.out.println("Warning: Programa não têm main!");
+            throw new RuntimeException("Programa não tem main!");
         } else if (main.getClass() != Function.class) {
-            System.out.println("Error: main não é uma função!");
+            throw new RuntimeException("Error: main não é uma função!");
         } else {
             CommandCall mainCall = new CommandCall("main", null, null, main.getLine());
             mainCall.accept(this);
@@ -274,7 +271,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(ExpressionCall node) {
-        System.out.println("ExpressionCall");
     }
 
     @Override
@@ -295,7 +291,7 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(Function function) {
-        System.out.println("Function: " + function.getId());
+//        System.out.println("Function: " + function.getId());
         function.getCommandsList().accept(this);
     }
 
@@ -366,5 +362,9 @@ public class VisitorInterpreter implements Visitor {
 
     public Map<String, Pair<Type, Literal>> getEnv() {
         return environments.peek();
+    }
+
+    public Map<String, Definition> getDefinitions() {
+        return definitionMap;
     }
 }
