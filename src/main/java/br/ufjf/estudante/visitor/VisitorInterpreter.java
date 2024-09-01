@@ -35,10 +35,15 @@ import br.ufjf.estudante.ast.Type;
 import br.ufjf.estudante.ast.TypeCustom;
 import br.ufjf.estudante.ast.TypePrimitive;
 import br.ufjf.estudante.util.Pair;
+import de.jflex.Lexer;
+import java_cup.runtime.Symbol;
+import lang.Symbols;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class VisitorInterpreter implements Visitor {
@@ -48,18 +53,15 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandAttribution attribution) {
-        String var = attribution.getlValue().getId();
         Expression expression = attribution.getExpression();
         expression.accept(this);
         Literal literal = expression.evaluate();
-//        environments.peek().put(var, new Pair<>(literal.getType(), literal));
         attribution.getlValue().accept(this);
         attribution.getlValue().set(literal);
     }
 
     @Override
     public void visit(CommandCall call) {
-        System.out.println("CommandCall: " + call.getId());
         Definition def = definitionMap.get(call.getId());
 
         if (def == null) {
@@ -67,7 +69,6 @@ public class VisitorInterpreter implements Visitor {
         }
 
         if (def.getClass() != Function.class) {
-            System.out.println(call.getId() + " não é uma função!");
             throw new RuntimeException(call.getId() + " não é uma função!");
         }
 
@@ -123,7 +124,6 @@ public class VisitorInterpreter implements Visitor {
 
             for (int i = 0; i < returnVars.size(); i++) {
                 String varId = returnVars.get(i);
-//                Type varType = returnTypes.getTypes().get(i);
                 Pair<Type, Literal> value = env.get(i + "return");
 
                 if (value == null) {
@@ -179,8 +179,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(CommandPrint print) {
-        System.out.print("Print: ");
-
         Expression expression = print.getExpression();
         expression.accept(this);
         Object value = expression.evaluate();
@@ -188,8 +186,26 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(CommandRead node) {
+    public void visit(CommandRead read) {
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
 
+        java_cup.runtime.Scanner lexer = new Lexer(new StringReader(input));
+        Literal literal;
+        try {
+            Symbol t = lexer.next_token();
+            literal = switch (t.sym) {
+                case Symbols.LIT_INT -> new LiteralInt((int) t.value, read.getLine());
+                case Symbols.LIT_FLOAT -> new LiteralFloat((float) t.value, read.getLine());
+                case Symbols.LIT_CHAR -> new LiteralChar((String) t.value, read.getLine());
+                case Symbols.LIT_BOOL -> new LiteralBool((boolean) t.value, read.getLine());
+                default -> throw new RuntimeException("Entrada inválida, espera-se um Int, Float, Char ou Bool.");
+            };
+            read.getLValue().accept(this);
+            read.getLValue().set(literal);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -228,12 +244,6 @@ public class VisitorInterpreter implements Visitor {
     @Override
     public void visit(Definition node) {
         System.out.println("Definition");
-
-//        if (node.getClass() == Data.class) {
-//            return;
-//        }
-//
-//        node.accept(this);
     }
 
     @Override
@@ -255,9 +265,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(ExpressionArithmetic expression) {
-//        System.out.println("ExpressionArithmetic " + expression.getOp());
-//        Object e1 = expression.getLeft().evaluate();
-//        Object e2 = expression.getRight().evaluate();
     }
 
     @Override
@@ -334,7 +341,6 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(Program node) {
-        System.out.println("Program");
         node.getDefList().accept(this);
     }
 

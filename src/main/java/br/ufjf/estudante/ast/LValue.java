@@ -44,6 +44,10 @@ public class LValue extends Expression {
             if (ref == null) {
                 ref = new Pair<>(value.getType(), value);
                 env.put(id, ref);
+            } else if (ref.getSecond().getClass() == value.getClass()) {
+                ref.setSecond(value);
+            } else {
+                throw new RuntimeException(String.format("Não se pode atribuir tipo %s em variável %s", value.getClass(), ref.getSecond().getClass()));
             }
             return;
         }
