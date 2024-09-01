@@ -42,10 +42,6 @@ public class Main {
             Parser p = new Parser(scanner);
             Program prog = (Program)(p.parse().value);
 
-//            if (!p.isGood()) {
-//                throw new Exception("Error no parser!");
-//            }
-
             VisitorInterpreter interpreter = new VisitorInterpreter();
             prog.accept(interpreter);
 
