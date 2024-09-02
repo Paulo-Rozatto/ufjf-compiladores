@@ -56,4 +56,9 @@ public class LiteralArray extends Literal {
         arrayToStringHelper(array, sb);
         return sb.toString();
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

@@ -100,5 +100,10 @@ public class LiteralFloat extends Literal {
     public String toString() {
         return String.valueOf(value);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }
 

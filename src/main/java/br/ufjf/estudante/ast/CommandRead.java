@@ -21,4 +21,9 @@ public class CommandRead extends Command {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

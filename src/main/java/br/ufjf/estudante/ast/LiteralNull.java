@@ -29,4 +29,9 @@ public class LiteralNull extends Literal {
     public Literal notEquals(Literal arg) {
         return new LiteralBool(arg.getClass() != LiteralNull.class, lineNumber);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

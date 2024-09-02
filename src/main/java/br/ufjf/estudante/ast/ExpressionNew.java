@@ -84,4 +84,9 @@ public class ExpressionNew extends Expression {
 
         return new LiteralCustom(customType.getId(), ((Data) typeDefinition).getDeclarations(), lineNumber);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

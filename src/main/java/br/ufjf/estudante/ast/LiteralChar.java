@@ -57,4 +57,9 @@ public class LiteralChar extends Literal {
 
         return super.add(arg);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

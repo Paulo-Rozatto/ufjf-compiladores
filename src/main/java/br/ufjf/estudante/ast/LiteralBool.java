@@ -80,4 +80,9 @@ public class LiteralBool extends Literal {
     public String toString() {
         return value.toString();
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

@@ -65,4 +65,8 @@ public class ExpressionArithmetic extends Expression {
     }
 
 
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

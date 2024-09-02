@@ -60,4 +60,8 @@ public abstract class Literal extends Expression {
         throw new RuntimeException("Operação não suportada");
     }
 
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

@@ -165,4 +165,8 @@ public class LValue extends Expression {
     }
 
 
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

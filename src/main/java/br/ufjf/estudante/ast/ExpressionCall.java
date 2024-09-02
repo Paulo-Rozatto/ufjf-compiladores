@@ -58,4 +58,9 @@ public class ExpressionCall extends Expression {
         String returnIndex = modifier.evaluate().toString();
         return env.get(returnIndex).getSecond();
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

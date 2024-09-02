@@ -16,4 +16,9 @@ abstract public class Definition extends Node {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

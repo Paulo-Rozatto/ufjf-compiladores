@@ -41,4 +41,9 @@ public class ExpressionBoolean extends Expression {
             default -> throw new RuntimeException("Operador booleano desconhecido: " + op);
         };
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

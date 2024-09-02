@@ -72,4 +72,9 @@ public class LiteralCustom extends Literal {
         sb.append("}");
         return sb.toString();
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TypeCustom extends Type {
-    private static Map<String, TypeCustom> runtimeTypes = new HashMap<>();
+    private static final Map<String, TypeCustom> runtimeTypes = new HashMap<>();
     private final String id;
 
     public TypeCustom(String id, int line) {
@@ -38,5 +38,10 @@ public class TypeCustom extends Type {
 
     public void accept(Visitor v) {
         v.visit(this);
+    }
+
+    @Override
+    public int getColumn() {
+        return -1;
     }
 }

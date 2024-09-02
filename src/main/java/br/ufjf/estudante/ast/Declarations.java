@@ -27,4 +27,9 @@ public class Declarations extends Node {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

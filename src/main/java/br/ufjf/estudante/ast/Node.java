@@ -7,7 +7,7 @@ package br.ufjf.estudante.ast;
 import br.ufjf.estudante.visitor.Visitor;
 
 
-abstract public class Node {
+abstract public class Node extends SuperNode {
     protected int lineNumber;
 
     public Node(int line) {

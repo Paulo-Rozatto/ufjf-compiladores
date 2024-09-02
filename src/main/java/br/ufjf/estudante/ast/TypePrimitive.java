@@ -21,4 +21,9 @@ public class TypePrimitive extends Type {
     public void accept(Visitor v) {
         v.visit(this);
     }
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }

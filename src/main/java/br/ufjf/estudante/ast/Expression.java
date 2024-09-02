@@ -16,4 +16,9 @@ public abstract class Expression extends Node {
     }
 
     public abstract Literal evaluate();
+
+    @Override
+    public int getColumn() {
+        return -1;
+    }
 }
