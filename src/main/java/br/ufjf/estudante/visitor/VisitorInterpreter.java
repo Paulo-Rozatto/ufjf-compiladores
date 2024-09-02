@@ -4,6 +4,10 @@
  */
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.util.Pair;
+import de.jflex.Lexer;
+import java_cup.runtime.Symbol;
+import lang.Symbols;
 import lang.ast.Command;
 import lang.ast.CommandAttribution;
 import lang.ast.CommandCall;
@@ -38,10 +42,6 @@ import lang.ast.ReturnTypes;
 import lang.ast.Type;
 import lang.ast.TypeCustom;
 import lang.ast.TypePrimitive;
-import br.ufjf.estudante.util.Pair;
-import de.jflex.Lexer;
-import java_cup.runtime.Symbol;
-import lang.Symbols;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -130,11 +130,19 @@ public class VisitorInterpreter implements Visitor {
             for (int i = 0; i < returnVars.size(); i++) {
                 String varId = returnVars.get(i);
                 Pair<Type, Literal> value = env.get(i + "return");
+                env.remove(i + "return");
 
                 if (value == null) {
                     throw new RuntimeException(
                             String.format("Faltando retorno %d, variavel %s", i + 1, varId)
                     );
+                }
+
+
+                Pair<Type, Literal> pv = environments.peek().get(varId);
+
+                if (pv != null && pv.getFirst().getC() != value.getFirst().getC()) {
+                    throw new RuntimeException(String.format("Não se pode atribuir tipo %s em variável %s", pv.getFirst().getC(), value.getFirst().getC()));
                 }
 
                 environments.peek().put(varId, value);
