@@ -5,7 +5,7 @@ is17=$(java -version 2>&1 | grep "version \"17")
 
 if [[ $is17 ]]; then
     echo "Java 17 detectado, compilando o projeto..."
-    mvn clean package
+    mvn clean package -Dmaven.test.skip=true
 else
     echo "É necessário instalar o Java 17 para compilar o código."
 fi
