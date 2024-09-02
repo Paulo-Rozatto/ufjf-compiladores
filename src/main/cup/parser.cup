@@ -59,14 +59,11 @@ non terminal LValue lvalue;
 non terminal ExpressionsList exps;
 non terminal cond;
 
+precedence left NOT, EQUALS, NOT_EQUALS, SMALLER, AND, ATTRIBUTION;
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
 
-precedence nonassoc ATTRIBUTION;
-precedence nonassoc AND;
-precedence left EQUALS, NOT_EQUALS, SMALLER;
-
-precedence right NOT, NEW, COMMA, ELSE;
+precedence right NEW, COMMA, ELSE;
 
 start with prog;
 
