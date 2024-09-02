@@ -40,6 +40,7 @@ import java_cup.runtime.Symbol;
 import lang.Symbols;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -270,10 +271,25 @@ public class VisitorInterpreter implements Visitor {
     }
 
     @Override
-    public void visit(ExpressionCall node) {
-        String returnVar = node.getModifier().evaluate().toString();
-        CommandCall call = new CommandCall(node.getId(), node.getParams(), List.of(returnVar), node.getLine());
-        call.accept(this);
+    public void visit(ExpressionCall call) {
+        Definition def = definitionMap.get(call.getId());
+
+        if (def == null) {
+            throw new RuntimeException("Função não declarada! " + call.getId());
+        }
+
+        if (def.getClass() != Function.class) {
+            throw new RuntimeException(call.getId() + " não é uma função!");
+        }
+
+        int numberReturns = ((Function) def).getParams().size();
+        List<String> returnVars = new ArrayList<>();
+        for (int i = 0; i < numberReturns; i++) {
+            returnVars.add(String.valueOf(i));
+        }
+
+        CommandCall call1 = new CommandCall(call.getId(), call.getParams(), returnVars, call.getLine());
+        call1.accept(this);
     }
 
     @Override
