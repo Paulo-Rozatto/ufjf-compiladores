@@ -77,7 +77,6 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
 
     // Keywords
     "if"       { return token(Symbols.IF); }
-    "then"     { return token(Symbols.THEN); }
     "else"     { return token(Symbols.ELSE); }
     "print"    { return token(Symbols.PRINT); }
     "read"     { return token(Symbols.READ); }

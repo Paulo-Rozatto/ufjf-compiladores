@@ -19,7 +19,7 @@ parser code{:
 
 terminal String IDENTIFIER;
 // Keywords
-terminal IF, THEN, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
+terminal IF, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
 // Primitives
 terminal TypePrimitive INT, FLOAT, CHAR, BOOL;
 terminal String CUSTOM;
