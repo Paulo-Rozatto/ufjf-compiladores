@@ -13,6 +13,7 @@ public class LValue extends Expression {
     private final String id;
     private final List<Object> modifiers = new ArrayList<>();
     private Map<String, Pair<Type, Literal>> env;
+    private Visitor v;
 
     public LValue(String id, int line) {
         super(line);
@@ -34,6 +35,8 @@ public class LValue extends Expression {
         } else {
             env = null;
         }
+
+        this.v = v;
 
         v.visit(this);
     }
@@ -60,6 +63,11 @@ public class LValue extends Expression {
         for (int i = 0; i < modifiers.size() - 1; i++) {
             modifier = modifiers.get(i);
 
+            if (modifier instanceof Expression) {
+                ((Expression) modifier).accept(v);
+                modifier = ((Expression) modifier).evaluate();
+            }
+
             if (modifier instanceof LiteralInt) {
                 if (currentObject instanceof LiteralArray) {
                     currentObject = ((LiteralArray) currentObject).getArray();
@@ -74,8 +82,18 @@ public class LValue extends Expression {
 
         // Codigo repetido para o ultimo modifier para fazer escrita
         modifier = modifiers.get(modifiers.size() - 1);
+
+        if (modifier instanceof Expression) {
+            ((Expression) modifier).accept(v);
+            modifier = ((Expression) modifier).evaluate();
+        }
+
         if (modifier instanceof LiteralInt) {
-            int index = ((LiteralInt) modifiers.get(modifiers.size() - 1)).getValue();
+            if (currentObject instanceof LiteralArray) {
+                currentObject = ((LiteralArray) currentObject).getArray();
+            }
+
+            int index = ((LiteralInt) modifier).getValue();
             if (value.getClass() == LiteralArray.class) {
                 Array.set(currentObject, index, ((LiteralArray) value).getArray());
 
@@ -110,6 +128,11 @@ public class LValue extends Expression {
 
         Object currentObject = var.getSecond();
         for (Object modifier : modifiers) {
+            if (modifier instanceof Expression) {
+                ((Expression) modifier).accept(v);
+                modifier = ((Expression) modifier).evaluate();
+            }
+
             if (modifier instanceof LiteralInt) {
                 if (currentObject instanceof LiteralArray) {
                     currentObject = ((LiteralArray) currentObject).getArray();

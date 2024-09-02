@@ -33,7 +33,7 @@ public class LiteralInt extends Literal {
             boolean result = value == ((LiteralInt) arg).getValue();
             return new LiteralBool(result, lineNumber);
         }
-        return super.add(arg);
+        return super.equals(arg);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class LiteralInt extends Literal {
             boolean result = value != ((LiteralInt) arg).getValue();
             return new LiteralBool(result, lineNumber);
         }
-        return super.add(arg);
+        return super.notEquals(arg);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class LiteralInt extends Literal {
             boolean result = value < ((LiteralInt) arg).getValue();
             return new LiteralBool(result, lineNumber);
         }
-        return super.add(arg);
+        return super.smaller(arg);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class LiteralInt extends Literal {
             int result = value - ((LiteralInt) arg).getValue();
             return new LiteralInt(result, lineNumber);
         }
-        return super.add(arg);
+        return super.sub(arg);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class LiteralInt extends Literal {
             int result = value * ((LiteralInt) arg).getValue();
             return new LiteralInt(result, lineNumber);
         }
-        return super.add(arg);
+        return super.mul(arg);
     }
 
     @Override
@@ -93,16 +93,16 @@ public class LiteralInt extends Literal {
             int result = value / ((LiteralInt) arg).getValue();
             return new LiteralInt(result, lineNumber);
         }
-        return super.add(arg);
+        return super.div(arg);
     }
 
     @Override
     public Literal mod(Literal arg) {
-        if (arg.getClass() == LiteralInt.class) {
+        if (arg instanceof LiteralInt) {
             int result = value % ((LiteralInt) arg).getValue();
             return new LiteralInt(result, lineNumber);
         }
-        return super.add(arg);
+        return super.mod(arg);
     }
 
 

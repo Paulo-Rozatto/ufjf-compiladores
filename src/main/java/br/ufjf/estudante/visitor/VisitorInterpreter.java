@@ -287,7 +287,7 @@ public class VisitorInterpreter implements Visitor {
             throw new RuntimeException(call.getId() + " não é uma função!");
         }
 
-        int numberReturns = ((Function) def).getParams().size();
+        int numberReturns = ((Function) def).getReturnTypes().getTypes().size();
         List<String> returnVars = new ArrayList<>();
         for (int i = 0; i < numberReturns; i++) {
             returnVars.add(String.valueOf(i));

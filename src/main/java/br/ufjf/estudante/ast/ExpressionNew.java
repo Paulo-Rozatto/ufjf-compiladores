@@ -27,6 +27,9 @@ public class ExpressionNew extends Expression {
         if (v.getClass() == VisitorInterpreter.class) {
             definitionMap = ((VisitorInterpreter) v).getDefinitions();
         }
+        if (exp != null) {
+            exp.accept(v);
+        }
         v.visit(this);
     }
 
