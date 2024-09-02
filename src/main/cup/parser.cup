@@ -2,7 +2,8 @@ package lang;
 
 import java_cup.runtime.*;
 import de.jflex.Lexer;
-import br.ufjf.estudante.ast.*;
+import lang.ast.*;
+import lang.parser.ParseAdaptor;
 import java.util.ArrayList;
 import java.util.List;
 

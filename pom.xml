@@ -76,7 +76,7 @@
                     <finalName>${project.artifactId}</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>br.ufjf.estudante.Main</mainClass>
+                            <mainClass>br.ufjf.estudante.LangCompiler</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
