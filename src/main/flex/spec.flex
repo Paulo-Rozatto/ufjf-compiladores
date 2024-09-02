@@ -10,9 +10,6 @@ import java_cup.runtime.*;
 import java.rmi.UnexpectedException;
 import java.util.Optional;
 
-import br.ufjf.estudante.tokens.TokenType;
-import br.ufjf.estudante.tokens.Token;
-
 import lang.Symbols;
 
 %%
