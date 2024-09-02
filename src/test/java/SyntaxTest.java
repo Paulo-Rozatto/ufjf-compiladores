@@ -1,3 +1,7 @@
+/*
+   André Luiz Cunha de Oliveira  - 201935020
+   Paulo Victor de M. Rozatto  - 201935027
+ */
 import br.ufjf.estudante.tokens.TokenType;
 import de.jflex.Lexer;
 import java_cup.runtime.Scanner;

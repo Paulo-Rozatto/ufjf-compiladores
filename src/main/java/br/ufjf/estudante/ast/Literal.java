@@ -1,3 +1,7 @@
+/*
+   André Luiz Cunha de Oliveira  - 201935020
+   Paulo Victor de M. Rozatto  - 201935027
+ */
 package br.ufjf.estudante.ast;
 
 public abstract class Literal extends Expression {
