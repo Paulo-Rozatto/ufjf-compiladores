@@ -182,7 +182,7 @@ public class VisitorInterpreter implements Visitor {
         Expression expression = print.getExpression();
         expression.accept(this);
         Object value = expression.evaluate();
-        System.out.println(value);
+        System.out.print(value);
     }
 
     @Override

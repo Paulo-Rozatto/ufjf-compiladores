@@ -61,7 +61,7 @@ PrimitiveLike   = [:uppercase:][:jletterdigit:]*
 LiteralInt      = [0-9]+
 LiteralFloat    = [0-9]*\.[0-9]+
 
-LiteralChar = \'([^\']|\\n|\\t|\\b|\\r|\\\\|\\')\'
+LiteralChar = \'([^\'])\'
 
 Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? serve caso o comentario esteja no final do arquivo
 
@@ -96,10 +96,14 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     // Literals
     {LiteralInt}     { return token(Symbols.LIT_INT, Integer.parseInt(yytext())); }
     {LiteralFloat}   { return token(Symbols.LIT_FLOAT, Float.parseFloat(yytext())); }
-    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext()); }
     "true"           { return token(Symbols.LIT_BOOL, true); }
     "false"          { return token(Symbols.LIT_BOOL, false); }
     "null"           { return token(Symbols.LIT_NULL); }
+
+    \'\\n\'          { return token(Symbols.LIT_CHAR,  "\n"); }
+    \'\\t\'          { return token(Symbols.LIT_CHAR,  "\t"); }
+    \'\\\\\'         { return token(Symbols.LIT_CHAR,  "\\"); }
+    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext().charAt(1) + ""); }
 
     // BRACES
     "(" { return token(Symbols.ROUND_L); }
