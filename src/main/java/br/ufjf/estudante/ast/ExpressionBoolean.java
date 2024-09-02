@@ -15,6 +15,13 @@ public class ExpressionBoolean extends Expression {
     }
 
     public void accept(Visitor v) {
+        if (left != null) {
+            left.accept(v);
+        }
+
+        if (right != null) {
+            right.accept(v);
+        }
         v.visit(this);
     }
 

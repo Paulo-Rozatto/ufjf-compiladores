@@ -271,6 +271,9 @@ public class VisitorInterpreter implements Visitor {
 
     @Override
     public void visit(ExpressionCall node) {
+        String returnVar = node.getModifier().evaluate().toString();
+        CommandCall call = new CommandCall(node.getId(), node.getParams(), List.of(returnVar), node.getLine());
+        call.accept(this);
     }
 
     @Override
