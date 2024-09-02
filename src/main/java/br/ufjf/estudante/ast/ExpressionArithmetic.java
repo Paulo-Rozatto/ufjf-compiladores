@@ -2,8 +2,6 @@ package br.ufjf.estudante.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
-import java.util.Objects;
-
 public class ExpressionArithmetic extends Expression {
     private final String op;
     private final Expression left;
@@ -17,6 +15,13 @@ public class ExpressionArithmetic extends Expression {
     }
 
     public void accept(Visitor v) {
+        if (left != null) {
+            left.accept(v);
+        }
+
+        if (right != null) {
+            right.accept(v);
+        }
         v.visit(this);
     }
 
