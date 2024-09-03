@@ -28,11 +28,11 @@ public class LiteralCustom extends Literal {
       throw new RuntimeException("Esse tipo não contém campo '" + id + "'");
     }
 
-    if (value.getClass() != p.getFirst().getC()) {
+    if (value.getClass() != p.getFirst().getLiteralClass()) {
       throw new RuntimeException(
           String.format(
               "Esperado tipo %s para campo '%s', obtido tipo %s",
-              p.getFirst().getC(), id, value.getClass()));
+              p.getFirst().getLiteralClass(), id, value.getClass()));
     }
 
     p.setSecond((Literal) value);

@@ -27,7 +27,7 @@ public class TypeCustom extends Type {
   }
 
   @Override
-  public Class<?> getC() {
+  public Class<?> getLiteralClass() {
     return LiteralCustom.class;
   }
 

@@ -8,14 +8,10 @@ import java.lang.reflect.Array;
 
 public class LiteralArray extends Literal {
   private final Object array;
-  private final int dimensions;
-  private final int lastSize;
 
-  public LiteralArray(Object array, int dimensions, int lastSize, int line) {
+  public LiteralArray(Object array, int line) {
     super(line);
     this.array = array;
-    this.dimensions = dimensions;
-    this.lastSize = lastSize;
   }
 
   private static void arrayToStringHelper(Object array, StringBuilder sb) {
@@ -38,14 +34,6 @@ public class LiteralArray extends Literal {
     return array;
   }
 
-  public int getDimensions() {
-    return dimensions;
-  }
-
-  public int getLastSize() {
-    return lastSize;
-  }
-
   @Override
   public Type getType() {
     return new TypePrimitive(this.getClass(), lineNumber);
@@ -55,10 +43,5 @@ public class LiteralArray extends Literal {
     StringBuilder sb = new StringBuilder();
     arrayToStringHelper(array, sb);
     return sb.toString();
-  }
-
-  @Override
-  public int getColumn() {
-    return -1;
   }
 }

@@ -14,7 +14,7 @@ public class TypePrimitive extends Type {
     this.c = c;
   }
 
-  public Class<?> getC() {
+  public Class<?> getLiteralClass() {
     return c;
   }
 

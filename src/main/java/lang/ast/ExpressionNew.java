@@ -49,7 +49,7 @@ public class ExpressionNew extends Expression {
     if (exp != null) {
       int size = ((LiteralInt) exp.evaluate()).getValue();
 
-      Object array = Array.newInstance(type.getC(), size);
+      Object array = Array.newInstance(type.getLiteralClass(), size);
 
       for (int i = 1; i < type.getDimensions(); i++) {
         Object tempArray = Array.newInstance(array.getClass(), size);
@@ -59,7 +59,7 @@ public class ExpressionNew extends Expression {
         array = tempArray;
       }
 
-      return new LiteralArray(array, type.getDimensions(), size, lineNumber);
+      return new LiteralArray(array, lineNumber);
     }
 
     if (type.getClass() == TypePrimitive.class) {

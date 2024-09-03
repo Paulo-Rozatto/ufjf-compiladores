@@ -152,8 +152,7 @@ public class LValue extends Expression {
     Object value = currentObject;
 
     if (value.getClass().isArray()) {
-      // todo: remover esses parametros de dimensao nao usados
-      return new LiteralArray(value, 1, 1, 1);
+      return new LiteralArray(value, 1);
     }
 
     return (Literal) value;

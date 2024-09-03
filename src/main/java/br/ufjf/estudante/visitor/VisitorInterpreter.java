@@ -140,11 +140,11 @@ public class VisitorInterpreter implements Visitor {
 
         Pair<Type, Literal> pv = environments.peek().get(varId);
 
-        if (pv != null && pv.getFirst().getC() != value.getFirst().getC()) {
+        if (pv != null && pv.getFirst().getLiteralClass() != value.getFirst().getLiteralClass()) {
           throw new RuntimeException(
               String.format(
                   "Não se pode atribuir tipo %s em variável %s",
-                  pv.getFirst().getC(), value.getFirst().getC()));
+                  pv.getFirst().getLiteralClass(), value.getFirst().getLiteralClass()));
         }
 
         environments.peek().put(varId, value);
