@@ -10,9 +10,6 @@ import java_cup.runtime.*;
 import java.rmi.UnexpectedException;
 import java.util.Optional;
 
-import br.ufjf.estudante.tokens.TokenType;
-import br.ufjf.estudante.tokens.Token;
-
 import lang.Symbols;
 
 %%
@@ -60,7 +57,9 @@ Identifier      = [:lowercase:][:jletterdigit:]*
 PrimitiveLike   = [:uppercase:][:jletterdigit:]*
 LiteralInt      = [0-9]+
 LiteralFloat    = [0-9]*\.[0-9]+
-LiteralChar     = '([:jletter:]|\\n|\\t|\\b|\\r|\\\\|\\')'
+
+LiteralChar = \'([^\'])\'
+
 Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? serve caso o comentario esteja no final do arquivo
 
 %state MULTI_COMMENT
@@ -75,7 +74,6 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
 
     // Keywords
     "if"       { return token(Symbols.IF); }
-    "then"     { return token(Symbols.THEN); }
     "else"     { return token(Symbols.ELSE); }
     "print"    { return token(Symbols.PRINT); }
     "read"     { return token(Symbols.READ); }
@@ -94,10 +92,14 @@ Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? 
     // Literals
     {LiteralInt}     { return token(Symbols.LIT_INT, Integer.parseInt(yytext())); }
     {LiteralFloat}   { return token(Symbols.LIT_FLOAT, Float.parseFloat(yytext())); }
-    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext()); }
     "true"           { return token(Symbols.LIT_BOOL, true); }
     "false"          { return token(Symbols.LIT_BOOL, false); }
     "null"           { return token(Symbols.LIT_NULL); }
+
+    \'\\n\'          { return token(Symbols.LIT_CHAR,  "\n"); }
+    \'\\t\'          { return token(Symbols.LIT_CHAR,  "\t"); }
+    \'\\\\\'         { return token(Symbols.LIT_CHAR,  "\\"); }
+    {LiteralChar}    { return token(Symbols.LIT_CHAR, yytext().charAt(1) + ""); }
 
     // BRACES
     "(" { return token(Symbols.ROUND_L); }

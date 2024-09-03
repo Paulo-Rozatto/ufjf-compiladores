@@ -2,6 +2,10 @@ package lang;
 
 import java_cup.runtime.*;
 import de.jflex.Lexer;
+import lang.ast.*;
+import lang.parser.ParseAdaptor;
+import java.util.ArrayList;
+import java.util.List;
 
 parser code{:
     public boolean syntaxErrors;
@@ -16,11 +20,16 @@ parser code{:
 
 terminal String IDENTIFIER;
 // Keywords
-terminal IF, THEN, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
+terminal IF, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
 // Primitives
-terminal INT, FLOAT, CHAR, BOOL, CUSTOM;
+terminal TypePrimitive INT, FLOAT, CHAR, BOOL;
+terminal String CUSTOM;
 // Literals
-terminal LIT_INT, LIT_FLOAT, LIT_CHAR, LIT_BOOL, LIT_NULL;
+terminal int     LIT_INT;
+terminal float   LIT_FLOAT;
+terminal String    LIT_CHAR;
+terminal boolean LIT_BOOL;
+terminal LIT_NULL;
 // Braces
 terminal ROUND_L, ROUND_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R;
 // Separators
@@ -30,72 +39,112 @@ terminal GREATER, SMALLER, EQUALS, NOT_EQUALS, AND, NOT;
 // Math operators
 terminal ATTRIBUTION, ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MOD;
 
-non terminal prog, def, data, decl, fun, funType, funTypeList, type, btype, cmdList, cmd, retIds, ids, exp, lvalue, exps, params, cond;
+non terminal Program prog;
+non terminal DefinitionsList defList;
+non terminal Definition def;
+non terminal Data data;
+non terminal Declarations decl;
+non terminal Function fun;
+non terminal Params params;
+non terminal ReturnTypes retTypes;
+non terminal ReturnTypes retTypesList;
+non terminal Type type;
+non terminal Type btype;
+non terminal CommandsList cmdList;
+non terminal Command cmd;
+non terminal List<String> retIds;
+non terminal List<String> ids;
+non terminal Expression exp;
+non terminal LValue lvalue;
+non terminal ExpressionsList exps;
 
+precedence left NOT, EQUALS, NOT_EQUALS, SMALLER, AND, ATTRIBUTION;
 precedence left ADDITION, SUBTRACTION;
 precedence left MULTIPLICATION, DIVISION, MOD;
 
-precedence nonassoc ATTRIBUTION;
-precedence nonassoc AND;
-precedence left EQUALS, NOT_EQUALS, SMALLER;
-
-precedence right NOT, NEW, COMMA, ELSE;
+precedence right NEW, COMMA, ELSE;
 
 start with prog;
 
-prog ::= prog def | def;
-def ::= fun:f | data:d;
-data ::= DATA CUSTOM:c CURLY_L decl:dl CURLY_R;
-decl ::= decl IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON;
-fun ::= IDENTIFIER:i ROUND_L params:p ROUND_R funType CURLY_L cmdList CURLY_R;
-funType ::=
-    | COLON funTypeList;
-funTypeList ::= funTypeList COMMA funTypeList
-    | type ;
-type ::= type:t SQUARE_L SQUARE_R
-    | type:t SQUARE_L exp SQUARE_R // todo: sera que isso pode ficar aqui mesmo
-    | btype;
-btype ::= INT | FLOAT | CHAR | BOOL | CUSTOM; // todo: esta errado esse identifier, tem quer ter uma primitiva so para custom types eu acho
-cmdList ::= cmdList cmd | cmd;
-cmd ::= CURLY_L cmdList CURLY_R
-    | IF ROUND_L exp:e ROUND_R cmd
-    | IF ROUND_L exp:e ROUND_R cmd ELSE cmd
-    | ITERATE ROUND_L exp ROUND_R cmd
-    | READ lvalue SEMICOLON
-    | PRINT exp SEMICOLON
-    | RETURN exps SEMICOLON
-    | lvalue ATTRIBUTION exp SEMICOLON
-    | IDENTIFIER ROUND_L exps ROUND_R retIds SEMICOLON;
-retIds ::=
-    | SMALLER ids GREATER;
-ids ::= IDENTIFIER
-    | ids COMMA ids;
-exp ::= exp AND exp
-    | exp SMALLER exp
-    | exp EQUALS exp
-    | exp NOT_EQUALS exp
-    | exp ADDITION exp
-    | exp SUBTRACTION exp
-    | exp MULTIPLICATION exp
-    | exp DIVISION exp
-    | exp MOD exp
-    | NOT exp
-    | SUBTRACTION exp
-    | LIT_BOOL
-    | LIT_NULL
-    | LIT_INT
-    | LIT_FLOAT
-    | LIT_CHAR
-    | lvalue
-    | ROUND_L exp ROUND_R
-    | NEW type //SQUARE_L exp SQUARE_R // todo: exp eh opcional (??) (entendi errado?)
-    | IDENTIFIER ROUND_L exps ROUND_R SQUARE_L exp SQUARE_R;
-lvalue ::= IDENTIFIER
-    | lvalue SQUARE_L exp SQUARE_R
-    | lvalue DOT IDENTIFIER;
-exps ::=
-    | exp
-    | exp COMMA exp;
+prog ::= defList:d                                                              {: RESULT = new Program(d, dleft); :};
+
+defList ::=                                                                     {: RESULT = new DefinitionsList(-1); :}
+    | defList:dl def:d                                                          {: RESULT = dl; RESULT.add(d); :};
+
+def ::= fun:f                                                                   {: RESULT = f; :}
+    | data:d                                                                    {: RESULT = d; :};
+
+data ::= DATA CUSTOM:name CURLY_L decl:d CURLY_R                                {: RESULT = new Data(name, d, nameleft); :};
+
+decl ::= decl:d IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                      {: RESULT = d; RESULT.add(i, t); :}
+    | IDENTIFIER:i DOUBLE_COLON type:t SEMICOLON                                {: RESULT = new Declarations(ileft); RESULT.add(i, t); :};
+
+fun ::= IDENTIFIER:id ROUND_L params:p ROUND_R retTypes:r CURLY_L cmdList:c CURLY_R {: RESULT = new Function(id, p, r, c, idleft); :};
+
 params ::=
-    | params COMMA params
-    | IDENTIFIER:i DOUBLE_COLON type:t;
+    | params:p COMMA IDENTIFIER:i DOUBLE_COLON type:t                           {: RESULT = p; RESULT.add(i, t); :}
+    | IDENTIFIER:i DOUBLE_COLON type:t                                          {: RESULT = new Params(ileft); RESULT.add(i, t); :};
+
+retTypes ::=
+    | COLON retTypesList:r {: RESULT = r; :};
+
+retTypesList ::= retTypesList:r COMMA type:t                                    {: RESULT = r; RESULT.add(t); :}
+    | type:t                                                                    {: RESULT = new ReturnTypes(tleft); RESULT.add(t); :};
+
+type ::= type:t SQUARE_L SQUARE_R                                               {: RESULT = t; t.increaseDimensions(); :}
+    | btype:b                                                                   {: RESULT = b; :};
+
+btype ::= INT:i                                                                 {: RESULT = new TypePrimitive(LiteralInt.class, ileft); :}
+    | FLOAT:i                                                                   {: RESULT = new TypePrimitive(LiteralFloat.class, ileft); :}
+    | CHAR:i                                                                    {: RESULT = new TypePrimitive(LiteralChar.class, ileft); :}
+    | BOOL:i                                                                    {: RESULT = new TypePrimitive(LiteralBool.class, ileft); :}
+    | CUSTOM:i                                                                  {: RESULT = new TypeCustom(i, ileft); :};
+
+cmdList ::= cmdList:cl cmd:c                                                    {: RESULT = cl; RESULT.add(c); :}
+    | cmd:c                                                                     {: RESULT = new CommandsList(cleft); RESULT.add(c); :};
+
+cmd ::= CURLY_L cmdList:c CURLY_R                                               {: RESULT = c; :}
+    | IF ROUND_L exp:e ROUND_R cmd:c                                            {: RESULT = new CommandIf(e, c, eleft); :}
+    | IF ROUND_L exp:e ROUND_R cmd:c1 ELSE cmd:c2                               {: RESULT = new CommandIf(e, c1, c2, eleft); :}
+    | ITERATE ROUND_L exp:e ROUND_R cmd:c                                       {: RESULT = new CommandIterate(e, c, eleft); :}
+    | READ lvalue:l SEMICOLON                                                   {: RESULT = new CommandRead(l, lleft); :}
+    | PRINT exp:e SEMICOLON                                                     {: RESULT = new CommandPrint(e, eleft); :}
+    | RETURN exps:e SEMICOLON                                                   {: RESULT = new CommandReturn(e, eleft); :}
+    | lvalue:l ATTRIBUTION exp:e SEMICOLON                                      {: RESULT = new CommandAttribution(l, e, lleft); :}
+    | IDENTIFIER:i ROUND_L exps:e ROUND_R retIds:r SEMICOLON                    {: RESULT = new CommandCall(i, e, r, eleft); :};
+
+lvalue ::= IDENTIFIER:i                                                         {: RESULT = new LValue(i, ileft); :}
+    | lvalue:l SQUARE_L exp:e SQUARE_R                                          {: RESULT = l; RESULT.addModifier(e); :}
+    | lvalue:l DOT IDENTIFIER:i                                                 {: RESULT = l; RESULT.addModifier(i); :};
+
+retIds ::=
+    | SMALLER ids:i GREATER                                                     {: RESULT = i; :};
+
+ids ::= IDENTIFIER:i                                                            {: RESULT = new ArrayList<String>(); RESULT.add(i); :}
+    | ids:ids COMMA IDENTIFIER:i                                                {: RESULT = ids; RESULT.add(i); :};
+
+exp ::= exp:e1 AND exp:e2                                                       {: RESULT = new ExpressionBoolean("&&", e1, e2, e1left); :}
+    | exp:e1 SMALLER exp:e2                                                     {: RESULT = new ExpressionArithmetic("<", e1, e2, e1left); :}
+    | exp:e1 EQUALS exp:e2                                                      {: RESULT = new ExpressionBoolean("==", e1, e2, e1left); :}
+    | exp:e1 NOT_EQUALS exp:e2                                                  {: RESULT = new ExpressionBoolean("!=", e1, e2, e1left); :}
+    | exp:e1 ADDITION exp:e2                                                    {: RESULT = new ExpressionArithmetic("+", e1, e2, e1left); :}
+    | exp:e1 SUBTRACTION exp:e2                                                 {: RESULT = new ExpressionArithmetic("-", e1, e2, e1left); :}
+    | exp:e1 MULTIPLICATION exp:e2                                              {: RESULT = new ExpressionArithmetic("*", e1, e2, e1left); :}
+    | exp:e1 DIVISION exp:e2                                                    {: RESULT = new ExpressionArithmetic("/", e1, e2, e1left); :}
+    | exp:e1 MOD exp:e2                                                         {: RESULT = new ExpressionArithmetic("%", e1, e2, e1left); :}
+    | NOT exp:e2                                                                {: RESULT = new ExpressionBoolean("!", null, e2, e2left); :}
+    | SUBTRACTION exp:e2                                                        {: RESULT = new ExpressionArithmetic("-", null, e2, e2left); :}
+    | LIT_BOOL:b                                                                {: RESULT = new LiteralBool(b, bleft); :}
+    | LIT_NULL:l                                                                {: RESULT = new LiteralNull(lleft); :}
+    | LIT_INT:l                                                                 {: RESULT = new LiteralInt(l, lleft); :}
+    | LIT_FLOAT:l                                                               {: RESULT = new LiteralFloat(l, lleft); :}
+    | LIT_CHAR:l                                                                {: RESULT = new LiteralChar(l, lleft); :}
+    | lvalue:l                                                                  {: RESULT = l; :}
+    | ROUND_L exp:e ROUND_R                                                     {: RESULT = e; :}
+    | NEW type:t                                                                {: RESULT = new ExpressionNew(t, tleft); :}
+    | NEW type:t SQUARE_L exp:e SQUARE_R                                        {: RESULT = new ExpressionNew(t, e, tleft); :}
+    | IDENTIFIER:i ROUND_L exps:e1 ROUND_R SQUARE_L exp:e2 SQUARE_R             {: RESULT = new ExpressionCall(i, e1, e2, e1left); :};
+
+exps ::= {: RESULT = new ExpressionsList(0); :}
+    | exp:e {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}
+    | exps:es COMMA exp:e {:  RESULT = es; RESULT.add(e); :};

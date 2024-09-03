@@ -1,4 +1,8 @@
-import br.ufjf.estudante.tokens.TokenType;
+/*
+   André Luiz Cunha de Oliveira  - 201935020
+   Paulo Victor de M. Rozatto  - 201935027
+ */
+
 import de.jflex.Lexer;
 import java_cup.runtime.Scanner;
 import java_cup.runtime.Symbol;
@@ -13,16 +17,16 @@ public class SyntaxTest {
     final private static String rightPath = "src/test/resources/data/syntax/right/";
     final private static String wrongPath = "src/test/resources/data/syntax/wrong/";
 
-    private void print(String file) throws  Exception {
+    private void print(String file) throws Exception {
         Lexer lexer = new Lexer(new FileReader(file));
         Symbol t = lexer.next_token();
 
         while (t.sym != 0) {
-            String tk = TokenType.valueOf(Symbols.terminalNames[t.sym]).label;
+            String tk = Symbols.terminalNames[t.sym];
             if (t.value != null) {
                 tk += ":" + t.value;
             }
-            System.out.print(tk +  " ");
+            System.out.print(tk + " ");
             t = lexer.next_token();
         }
 
