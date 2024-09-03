@@ -1,88 +1,88 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
 public class LiteralBool extends Literal {
-    private final Boolean value;
+  private final Boolean value;
 
-    public LiteralBool(Boolean value, int line) {
-        super(line);
-        this.value = value;
+  public LiteralBool(Boolean value, int line) {
+    super(line);
+    this.value = value;
+  }
+
+  public void accept(Visitor v) {
+    v.visit(this);
+  }
+
+  public Boolean getValue() {
+    return value;
+  }
+
+  @Override
+  public Literal evaluate() {
+    return this;
+  }
+
+  @Override
+  public Literal and(Literal arg) {
+    if (arg.getClass() == LiteralBool.class) {
+      boolean result = value && ((LiteralBool) arg).getValue();
+      return new LiteralBool(result, lineNumber);
     }
 
-    public void accept(Visitor v) {
-        v.visit(this);
+    return super.add(arg);
+  }
+
+  //    @Override
+  //    public Literal or(Literal arg) {
+  //        if(arg.getClass() == LiteralBool.class) {
+  //            boolean result = value || ((LiteralBool) arg).getValue();
+  //            return new LiteralBool(result, lineNumber);
+  //        }
+  //
+  //        return super.add(arg);
+  //    }
+
+  @Override
+  public Literal not() {
+    return new LiteralBool(!value, lineNumber);
+  }
+
+  @Override
+  public Literal equals(Literal arg) {
+    if (arg.getClass() == LiteralBool.class) {
+      boolean result = value == ((LiteralBool) arg).getValue();
+      return new LiteralBool(result, lineNumber);
     }
 
-    public Boolean getValue() {
-        return value;
+    return super.add(arg);
+  }
+
+  @Override
+  public Literal notEquals(Literal arg) {
+    if (arg.getClass() == LiteralBool.class) {
+      boolean result = value != ((LiteralBool) arg).getValue();
+      return new LiteralBool(result, lineNumber);
     }
 
-    @Override
-    public Literal evaluate() {
-        return this;
-    }
+    return super.add(arg);
+  }
 
-    @Override
-    public Literal and(Literal arg) {
-        if (arg.getClass() == LiteralBool.class) {
-            boolean result = value && ((LiteralBool) arg).getValue();
-            return new LiteralBool(result, lineNumber);
-        }
+  public Type getType() {
+    return new TypePrimitive(this.getClass(), lineNumber);
+  }
 
-        return super.add(arg);
-    }
+  @Override
+  public String toString() {
+    return value.toString();
+  }
 
-//    @Override
-//    public Literal or(Literal arg) {
-//        if(arg.getClass() == LiteralBool.class) {
-//            boolean result = value || ((LiteralBool) arg).getValue();
-//            return new LiteralBool(result, lineNumber);
-//        }
-//
-//        return super.add(arg);
-//    }
-
-    @Override
-    public Literal not() {
-        return new LiteralBool(!value, lineNumber);
-    }
-
-    @Override
-    public Literal equals(Literal arg) {
-        if (arg.getClass() == LiteralBool.class) {
-            boolean result = value == ((LiteralBool) arg).getValue();
-            return new LiteralBool(result, lineNumber);
-        }
-
-        return super.add(arg);
-    }
-
-    @Override
-    public Literal notEquals(Literal arg) {
-        if (arg.getClass() == LiteralBool.class) {
-            boolean result = value != ((LiteralBool) arg).getValue();
-            return new LiteralBool(result, lineNumber);
-        }
-
-        return super.add(arg);
-    }
-
-    public Type getType() {
-        return new TypePrimitive(this.getClass(), lineNumber);
-    }
-
-    @Override
-    public String toString() {
-        return value.toString();
-    }
-
-    @Override
-    public int getColumn() {
-        return -1;
-    }
+  @Override
+  public int getColumn() {
+    return -1;
+  }
 }

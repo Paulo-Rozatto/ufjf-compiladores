@@ -1,29 +1,29 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
 public class CommandPrint extends Command {
-    private final Expression expression;
+  private final Expression expression;
 
-    public CommandPrint(Expression expression, int line) {
-        super(line);
-        this.expression = expression;
-    }
+  public CommandPrint(Expression expression, int line) {
+    super(line);
+    this.expression = expression;
+  }
 
-    public Expression getExpression() {
-        return expression;
-    }
+  public Expression getExpression() {
+    return expression;
+  }
 
-    public void accept(Visitor v) {
-        v.visit(this);
-    }
+  public void accept(Visitor v) {
+    v.visit(this);
+  }
 
-    @Override
-    public int getColumn() {
-        return -1;
-    }
+  @Override
+  public int getColumn() {
+    return -1;
+  }
 }

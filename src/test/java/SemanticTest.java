@@ -2,14 +2,13 @@
    André Luiz Cunha de Oliveira  - 201935020
    Paulo Victor de M. Rozatto  - 201935027
  */
-import lang.ast.Program;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
 import de.jflex.Lexer;
+import java.io.FileReader;
 import java_cup.runtime.Scanner;
 import lang.Parser;
+import lang.ast.Program;
 import org.testng.annotations.Test;
-
-import java.io.FileReader;
 
 public class SemanticTest {
     final private static String rightPath = "src/test/resources/data/semantic/right/";

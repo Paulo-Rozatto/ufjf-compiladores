@@ -1,7 +1,7 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package br.ufjf.estudante.visitor;
 
 import lang.ast.Command;
@@ -39,69 +39,69 @@ import lang.ast.TypeCustom;
 import lang.ast.TypePrimitive;
 
 public interface Visitor {
-    public void visit(CommandAttribution node);
+  void visit(CommandAttribution node);
 
-    public void visit(CommandCall node);
+  void visit(CommandCall node);
 
-    public void visit(CommandIf node);
+  void visit(CommandIf node);
 
-    public void visit(CommandIterate node);
+  void visit(CommandIterate node);
 
-    public void visit(Command node);
+  void visit(Command node);
 
-    public void visit(CommandPrint node);
+  void visit(CommandPrint node);
 
-    public void visit(CommandRead node);
+  void visit(CommandRead node);
 
-    public void visit(CommandReturn node);
+  void visit(CommandReturn node);
 
-    public void visit(CommandsList node);
+  void visit(CommandsList node);
 
-    public void visit(Data node);
+  void visit(Data node);
 
-    public void visit(Declarations node);
+  void visit(Declarations node);
 
-    public void visit(Definition node);
+  void visit(Definition node);
 
-    public void visit(DefinitionsList node);
+  void visit(DefinitionsList node);
 
-    public void visit(ExpressionArithmetic node);
+  void visit(ExpressionArithmetic node);
 
-    public void visit(ExpressionBoolean node);
+  void visit(ExpressionBoolean node);
 
-    public void visit(ExpressionCall node);
+  void visit(ExpressionCall node);
 
-    public void visit(Expression node);
+  void visit(Expression node);
 
-    public void visit(ExpressionNew node);
+  void visit(ExpressionNew node);
 
-    public void visit(ExpressionsList node);
+  void visit(ExpressionsList node);
 
-    public void visit(Function node);
+  void visit(Function node);
 
-    public void visit(LiteralBool node);
+  void visit(LiteralBool node);
 
-    public void visit(LiteralChar node);
+  void visit(LiteralChar node);
 
-    public void visit(LiteralFloat node);
+  void visit(LiteralFloat node);
 
-    public void visit(LiteralInt node);
+  void visit(LiteralInt node);
 
-    public void visit(LiteralNull node);
+  void visit(LiteralNull node);
 
-    public void visit(LValue node);
+  void visit(LValue node);
 
-    public void visit(Node node);
+  void visit(Node node);
 
-    public void visit(Params node);
+  void visit(Params node);
 
-    public void visit(Program node);
+  void visit(Program node);
 
-    public void visit(ReturnTypes node);
+  void visit(ReturnTypes node);
 
-    public void visit(TypeCustom node);
+  void visit(TypeCustom node);
 
-    public void visit(Type node);
+  void visit(Type node);
 
-    public void visit(TypePrimitive node);
+  void visit(TypePrimitive node);
 }

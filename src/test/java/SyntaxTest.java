@@ -4,14 +4,12 @@
  */
 
 import de.jflex.Lexer;
+import java.io.FileReader;
 import java_cup.runtime.Scanner;
 import java_cup.runtime.Symbol;
 import lang.Parser;
 import lang.Symbols;
 import org.testng.annotations.Test;
-
-import java.io.FileReader;
-
 
 public class SyntaxTest {
     final private static String rightPath = "src/test/resources/data/syntax/right/";

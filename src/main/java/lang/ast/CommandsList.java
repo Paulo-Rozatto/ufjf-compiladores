@@ -1,35 +1,34 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommandsList extends Command {
-    private final List<Command> commands = new ArrayList<>();
+  private final List<Command> commands = new ArrayList<>();
 
-    public CommandsList(int line) {
-        super(line);
-    }
+  public CommandsList(int line) {
+    super(line);
+  }
 
-    public void add(Command command) {
-        commands.add(command);
-    }
+  public void add(Command command) {
+    commands.add(command);
+  }
 
-    public List<Command> getCommands() {
-        return commands;
-    }
+  public List<Command> getCommands() {
+    return commands;
+  }
 
-    public void accept(Visitor v) {
-        v.visit(this);
-    }
+  public void accept(Visitor v) {
+    v.visit(this);
+  }
 
-    @Override
-    public int getColumn() {
-        return -1;
-    }
+  @Override
+  public int getColumn() {
+    return -1;
+  }
 }

@@ -27,7 +27,7 @@ terminal String CUSTOM;
 // Literals
 terminal int     LIT_INT;
 terminal float   LIT_FLOAT;
-terminal String    LIT_CHAR;
+terminal String  LIT_CHAR;
 terminal boolean LIT_BOOL;
 terminal LIT_NULL;
 // Braces
@@ -145,6 +145,6 @@ exp ::= exp:e1 AND exp:e2                                                       
     | NEW type:t SQUARE_L exp:e SQUARE_R                                        {: RESULT = new ExpressionNew(t, e, tleft); :}
     | IDENTIFIER:i ROUND_L exps:e1 ROUND_R SQUARE_L exp:e2 SQUARE_R             {: RESULT = new ExpressionCall(i, e1, e2, e1left); :};
 
-exps ::= {: RESULT = new ExpressionsList(0); :}
-    | exp:e {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}
-    | exps:es COMMA exp:e {:  RESULT = es; RESULT.add(e); :};
+exps ::=                                                                        {: RESULT = new ExpressionsList(0); :}
+    | exp:e                                                                     {: RESULT = new ExpressionsList(eleft); RESULT.add(e); :}
+    | exps:es COMMA exp:e                                                       {:  RESULT = es; RESULT.add(e); :};
