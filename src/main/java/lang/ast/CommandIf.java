@@ -1,48 +1,48 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
 public class CommandIf extends Command {
-    private final Expression expression;
-    private final Command then;
-    private final Command otherwise;
+  private final Expression expression;
+  private final Command then;
+  private final Command otherwise;
 
-    public CommandIf(Expression expression, Command then, int line) {
-        super(line);
-        this.expression = expression;
-        this.then = then;
-        this.otherwise = null;
-    }
+  public CommandIf(Expression expression, Command then, int line) {
+    super(line);
+    this.expression = expression;
+    this.then = then;
+    this.otherwise = null;
+  }
 
-    public CommandIf(Expression expression, Command then, Command otherwise, int line) {
-        super(line);
-        this.expression = expression;
-        this.then = then;
-        this.otherwise = otherwise;
-    }
+  public CommandIf(Expression expression, Command then, Command otherwise, int line) {
+    super(line);
+    this.expression = expression;
+    this.then = then;
+    this.otherwise = otherwise;
+  }
 
-    public Command getThen() {
-        return then;
-    }
+  public Command getThen() {
+    return then;
+  }
 
-    public Command getOtherwise() {
-        return otherwise;
-    }
+  public Command getOtherwise() {
+    return otherwise;
+  }
 
-    public Expression getExpression() {
-        return expression;
-    }
+  public Expression getExpression() {
+    return expression;
+  }
 
-    public void accept(Visitor v) {
-        v.visit(this);
-    }
+  public void accept(Visitor v) {
+    v.visit(this);
+  }
 
-    @Override
-    public int getColumn() {
-        return -1;
-    }
+  @Override
+  public int getColumn() {
+    return -1;
+  }
 }

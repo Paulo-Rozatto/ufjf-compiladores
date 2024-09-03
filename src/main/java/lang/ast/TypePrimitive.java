@@ -1,29 +1,29 @@
 /*
-   André Luiz Cunha de Oliveira  - 201935020
-   Paulo Victor de M. Rozatto  - 201935027
- */
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
 
 public class TypePrimitive extends Type {
-    private final Class<?> c;
+  private final Class<?> c;
 
-    public TypePrimitive(Class<?> c, int line) {
-        super(line);
-        this.c = c;
-    }
+  public TypePrimitive(Class<?> c, int line) {
+    super(line);
+    this.c = c;
+  }
 
-    public Class<?> getC() {
-        return c;
-    }
+  public Class<?> getLiteralClass() {
+    return c;
+  }
 
-    public void accept(Visitor v) {
-        v.visit(this);
-    }
+  public void accept(Visitor v) {
+    v.visit(this);
+  }
 
-    @Override
-    public int getColumn() {
-        return -1;
-    }
+  @Override
+  public int getColumn() {
+    return -1;
+  }
 }

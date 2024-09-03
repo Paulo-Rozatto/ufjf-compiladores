@@ -60,7 +60,7 @@ LiteralFloat    = [0-9]*\.[0-9]+
 
 LiteralChar = \'([^\'])\'
 
-Comment         = "--" {InputCharacter}* {LineTerminator}? // provavelmente o ? serve caso o comentario esteja no final do arquivo
+Comment         = "--" {InputCharacter}* {LineTerminator}?
 
 %state MULTI_COMMENT
 
