@@ -1,6 +1,7 @@
 # Trabalho de Compiladores
 
-Este projeto consiste na implementação de um analisador léxico para a linguagem "lang". O objetivo é desenvolver uma ferramenta capaz de identificar e classificar os componentes léxicos da linguagem conforme especificado nos materiais do curso. 
+A primeira parte deste projeto consistiu na implementação de um analisador léxico para a linguagem lang.
+A segunda parte consistiu em criar um analisador sintático e um interpretador para a linguagem lang.
 
 ## Pré-requisitos
 
@@ -31,7 +32,7 @@ cd ufjf-compiladores/
 Depois de compilar o projeto, execute o analisador léxico com o seguinte comando:
 
 ```bash
-java -jar target/ufjf-compiladores-1.0.jar testes/sintaxe/exemplo1.txt
+java -jar target/ufjf-compiladores-jar-with-dependencies.jar -i src/test/resources/data/semantic/right/teste0.lan
 ```
 
 ## Sobre o Projeto
@@ -40,4 +41,4 @@ Este projeto foi desenvolvido utilizando Java 17. Certifique-se de que você tem
 
 ## Implementação
 
-O analisador léxico foi implementado em Java, com o código-fonte disponível no diretório `src` do projeto. A implementação visa realizar a análise léxica, que é a primeira fase de compilação, transformando uma sequência de caracteres em uma sequência de tokens.
+O analisador léxico foi implementado usando a biblioteca JFlex e o analisador sintático foi implementado com JCup.
