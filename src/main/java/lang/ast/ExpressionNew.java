@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
 import java.lang.reflect.Array;
@@ -63,22 +64,22 @@ public class ExpressionNew extends Expression {
     }
 
     if (type.getClass() == TypePrimitive.class) {
-      throw new RuntimeException("Instanciar primitivo é inválido");
+      throw new VisitException("Instanciar primitivo é inválido", getLine());
     }
 
     if (definitionMap.isEmpty()) {
-      throw new RuntimeException("Definições estão vazias!");
+      throw new VisitException("Definições estão vazias!", getLine());
     }
 
     TypeCustom customType = (TypeCustom) type;
     Definition typeDefinition = definitionMap.get(customType.getId());
 
     if (typeDefinition == null) {
-      throw new RuntimeException("Tipo '" + customType.getId() + "' inexistente");
+      throw new VisitException("Tipo '" + customType.getId() + "' inexistente", getLine());
     }
 
     if (typeDefinition.getClass() != Data.class) {
-      throw new RuntimeException(customType.getId() + " não é um tipo");
+      throw new VisitException(customType.getId() + " não é um tipo", getLine());
     }
 
     return new LiteralCustom(

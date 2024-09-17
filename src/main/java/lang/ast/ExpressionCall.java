@@ -5,6 +5,7 @@
 package lang.ast;
 
 import br.ufjf.estudante.util.Pair;
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class ExpressionCall extends Expression {
     }
 
     if (!(modifier instanceof LiteralInt)) {
-      throw new RuntimeException("Modificado invalido: " + modifier);
+      throw new VisitException("Modificador invalido: " + modifier, getLine());
     }
 
     String returnIndex = modifier.evaluate().toString();

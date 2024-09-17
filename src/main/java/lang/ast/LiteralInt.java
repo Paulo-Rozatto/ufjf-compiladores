@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
 public class LiteralInt extends Literal {
@@ -32,8 +33,17 @@ public class LiteralInt extends Literal {
   }
 
   @Override
+  protected boolean checkArg(Literal arg) {
+    if (arg == null) {
+      throw new VisitException("Argumento faltante!", getLine());
+    }
+
+    return arg.getClass() == LiteralInt.class;
+  }
+
+  @Override
   public Literal equals(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       boolean result = value == ((LiteralInt) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -42,7 +52,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal notEquals(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       boolean result = value != ((LiteralInt) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -51,7 +61,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal smaller(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       boolean result = value < ((LiteralInt) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -60,7 +70,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal add(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       int result = value + ((LiteralInt) arg).getValue();
       return new LiteralInt(result, lineNumber);
     }
@@ -74,7 +84,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal sub(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       int result = value - ((LiteralInt) arg).getValue();
       return new LiteralInt(result, lineNumber);
     }
@@ -83,7 +93,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal mul(Literal arg) {
-    if (arg.getClass() == LiteralInt.class) {
+    if (checkArg(arg)) {
       int result = value * ((LiteralInt) arg).getValue();
       return new LiteralInt(result, lineNumber);
     }
@@ -92,7 +102,7 @@ public class LiteralInt extends Literal {
 
   @Override
   public Literal div(Literal arg) {
-    if (arg.getClass() == LiteralInt.class && ((LiteralInt) arg).getValue() != 0) {
+    if (checkArg(arg) && ((LiteralInt) arg).getValue() != 0) {
       int result = value / ((LiteralInt) arg).getValue();
       return new LiteralInt(result, lineNumber);
     }

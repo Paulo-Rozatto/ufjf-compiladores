@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
 public class LiteralFloat extends Literal {
@@ -27,8 +28,17 @@ public class LiteralFloat extends Literal {
   }
 
   @Override
+  protected boolean checkArg(Literal arg) {
+    if (arg == null) {
+      throw new VisitException("Argumento faltante!", getLine());
+    }
+
+    return arg.getClass() == LiteralFloat.class;
+  }
+
+  @Override
   public Literal equals(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       boolean result = value == ((LiteralFloat) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -37,7 +47,7 @@ public class LiteralFloat extends Literal {
 
   @Override
   public Literal notEquals(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       boolean result = value != ((LiteralFloat) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -46,7 +56,7 @@ public class LiteralFloat extends Literal {
 
   @Override
   public Literal smaller(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       boolean result = value < ((LiteralFloat) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -54,7 +64,7 @@ public class LiteralFloat extends Literal {
   }
 
   public Literal add(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       float result = value + ((LiteralFloat) arg).getValue();
       return new LiteralFloat(result, lineNumber);
     }
@@ -64,7 +74,7 @@ public class LiteralFloat extends Literal {
 
   @Override
   public Literal sub(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       float result = value - ((LiteralFloat) arg).getValue();
       return new LiteralFloat(result, lineNumber);
     }
@@ -73,7 +83,7 @@ public class LiteralFloat extends Literal {
   }
 
   public Literal mul(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class) {
+    if (checkArg(arg)) {
       float result = value * ((LiteralFloat) arg).getValue();
       return new LiteralFloat(result, lineNumber);
     }
@@ -83,7 +93,7 @@ public class LiteralFloat extends Literal {
 
   @Override
   public Literal div(Literal arg) {
-    if (arg.getClass() == LiteralFloat.class && ((LiteralFloat) arg).getValue() != 0) {
+    if (checkArg(arg) && ((LiteralFloat) arg).getValue() != 0) {
       float result = value / ((LiteralFloat) arg).getValue();
       return new LiteralFloat(result, lineNumber);
     }

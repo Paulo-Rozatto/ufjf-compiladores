@@ -39,6 +39,11 @@ public class LiteralArray extends Literal {
     return new TypePrimitive(this.getClass(), lineNumber);
   }
 
+  @Override
+  protected boolean checkArg(Literal arg) {
+    return false;
+  }
+
   public String toString() {
     StringBuilder sb = new StringBuilder();
     arrayToStringHelper(array, sb);

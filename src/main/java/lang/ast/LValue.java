@@ -5,6 +5,7 @@
 package lang.ast;
 
 import br.ufjf.estudante.util.Pair;
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
 import java.lang.reflect.Array;
@@ -44,6 +45,10 @@ public class LValue extends Expression {
   }
 
   public void set(Literal value) {
+    if (value == null) {
+      throw new VisitException("Atribuição inválida!", getLine());
+    }
+
     if (modifiers.isEmpty()) {
       Pair<Type, Literal> ref = env.get(id);
       if (ref == null) {
@@ -52,10 +57,11 @@ public class LValue extends Expression {
       } else if (ref.getSecond().getClass() == value.getClass()) {
         ref.setSecond(value);
       } else {
-        throw new RuntimeException(
+        throw new VisitException(
             String.format(
                 "Não se pode atribuir tipo %s em variável %s",
-                value.getClass(), ref.getSecond().getClass()));
+                value.getClass().getCanonicalName(), ref.getSecond().getClass().getCanonicalName()),
+            getLine());
       }
       return;
     }
@@ -81,7 +87,7 @@ public class LValue extends Expression {
       } else if (modifier instanceof String) {
         currentObject = ((LiteralCustom) currentObject).getField((String) modifier).getSecond();
       } else {
-        throw new RuntimeException("Modificador invalido: " + modifier);
+        throw new VisitException("Modificador invalido: " + modifier, getLine());
       }
     }
 
@@ -145,11 +151,15 @@ public class LValue extends Expression {
       } else if (modifier instanceof String) {
         currentObject = ((LiteralCustom) currentObject).getField((String) modifier).getSecond();
       } else {
-        throw new RuntimeException("Modificador invalido: " + modifier);
+        throw new VisitException("Modificador invalido: " + modifier, getLine());
       }
     }
 
     Object value = currentObject;
+
+    if (value == null) {
+      return new LiteralNull(getLine());
+    }
 
     if (value.getClass().isArray()) {
       return new LiteralArray(value, 1);

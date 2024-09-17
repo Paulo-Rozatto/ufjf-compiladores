@@ -4,6 +4,8 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
+
 public abstract class Literal extends Expression {
   public Literal(int line) {
     super(line);
@@ -11,53 +13,55 @@ public abstract class Literal extends Expression {
 
   @Override
   public Literal evaluate() {
-    return null;
+    return new LiteralNull(getLine());
   }
 
   public abstract Type getType();
 
+  protected abstract boolean checkArg(Literal arg);
+
   public Literal equals(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '==' não suportada com argumento " + arg, getLine());
   }
 
   public Literal notEquals(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '!=' não suportada com argumento " + arg, getLine());
   }
 
   public Literal smaller(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '<' não suportada com argumento " + arg, getLine());
   }
 
   public Literal add(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '+' não suportada com argumento " + arg, getLine());
   }
 
   public Literal sub(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '-' não suportada com argumento " + arg, getLine());
   }
 
   public Literal mul(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '*' não suportada com argumento " + arg, getLine());
   }
 
   public Literal div(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '/' não suportada com argumento " + arg, getLine());
   }
 
   public Literal mod(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '%' não suportada com argumento " + arg, getLine());
   }
 
   public Literal and(Literal arg) {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '&&' não suportada com argumento " + arg, getLine());
   }
 
   //    public Literal or(Literal arg) {
-  //        throw new RuntimeException("Operação não suportada");
+  //        throw new VisitException("Operação não suportada com argumento " + arg, getLine());
   //    }
 
   public Literal not() {
-    throw new RuntimeException("Operação não suportada");
+    throw new VisitException("Operação '!' não suportada", getLine());
   }
 
   @Override

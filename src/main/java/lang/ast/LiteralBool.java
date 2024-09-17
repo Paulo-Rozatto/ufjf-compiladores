@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
 public class LiteralBool extends Literal {
@@ -54,7 +55,7 @@ public class LiteralBool extends Literal {
 
   @Override
   public Literal equals(Literal arg) {
-    if (arg.getClass() == LiteralBool.class) {
+    if (checkArg(arg)) {
       boolean result = value == ((LiteralBool) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -64,7 +65,7 @@ public class LiteralBool extends Literal {
 
   @Override
   public Literal notEquals(Literal arg) {
-    if (arg.getClass() == LiteralBool.class) {
+    if (checkArg(arg)) {
       boolean result = value != ((LiteralBool) arg).getValue();
       return new LiteralBool(result, lineNumber);
     }
@@ -74,6 +75,15 @@ public class LiteralBool extends Literal {
 
   public Type getType() {
     return new TypePrimitive(this.getClass(), lineNumber);
+  }
+
+  @Override
+  protected boolean checkArg(Literal arg) {
+    if (arg == null) {
+      throw new VisitException("Argumento faltante!", getLine());
+    }
+
+    return arg.getClass() == LiteralBool.class;
   }
 
   @Override

@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
 public class ExpressionBoolean extends Expression {
@@ -38,7 +39,7 @@ public class ExpressionBoolean extends Expression {
       case "==" -> left.evaluate().equals(right.evaluate());
       case "!=" -> left.evaluate().notEquals(right.evaluate());
       //            case "||" -> left.evaluate().or(right.evaluate());
-      default -> throw new RuntimeException("Operador booleano desconhecido: " + op);
+      default -> throw new VisitException("Operador booleano desconhecido: " + op, getLine());
     };
   }
 
