@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 import java.util.Objects;
 
@@ -28,6 +29,15 @@ public class LiteralChar extends Literal {
   }
 
   @Override
+  protected boolean checkArg(Literal arg) {
+    if (arg == null) {
+      throw new VisitException("Argumento faltante!", getLine());
+    }
+
+    return arg.getClass() == LiteralChar.class;
+  }
+
+  @Override
   public Literal evaluate() {
     return this;
   }
@@ -39,7 +49,7 @@ public class LiteralChar extends Literal {
 
   @Override
   public Literal equals(Literal arg) {
-    if (arg.getClass() == LiteralChar.class) {
+    if (checkArg(arg)) {
       boolean result = Objects.equals(value, ((LiteralChar) arg).getValue());
       return new LiteralBool(result, lineNumber);
     }
@@ -49,7 +59,7 @@ public class LiteralChar extends Literal {
 
   @Override
   public Literal notEquals(Literal arg) {
-    if (arg.getClass() == LiteralChar.class) {
+    if (checkArg(arg)) {
       boolean result = !Objects.equals(value, ((LiteralChar) arg).getValue());
       return new LiteralBool(result, lineNumber);
     }

@@ -56,8 +56,12 @@ public class LangCompiler {
         System.exit(1);
       } else if (args[0].equals("-i")) {
         VisitorInterpreter interpreter = new VisitorInterpreter();
-        Program prog = (Program) (result);
-        prog.accept(interpreter);
+        try {
+          Program prog = (Program) (result);
+          prog.accept(interpreter);
+        } catch (Exception e) {
+          System.out.println(e.getMessage());
+        }
       } else if (args[0].equals("-ii")) {
         // iv = new InteractiveInterpreterVisitor();
         // result.accept(iv);

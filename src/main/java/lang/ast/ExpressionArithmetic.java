@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
 public class ExpressionArithmetic extends Expression {
@@ -43,28 +44,32 @@ public class ExpressionArithmetic extends Expression {
 
   @Override
   public Literal evaluate() {
-    return switch (op) {
-      case "+" -> left.evaluate().add(right.evaluate());
-      case "-" -> {
-        if (left == null) {
-          Literal rightValue = right.evaluate();
-          Literal zero =
-              rightValue.getClass() == LiteralInt.class
-                  ? new LiteralInt(0, lineNumber)
-                  : new LiteralFloat(0, lineNumber);
-          yield zero.sub(rightValue);
+    try {
+      return switch (op) {
+        case "+" -> left.evaluate().add(right.evaluate());
+        case "-" -> {
+          if (left == null) {
+            Literal rightValue = right.evaluate();
+            Literal zero =
+                rightValue.getClass() == LiteralInt.class
+                    ? new LiteralInt(0, lineNumber)
+                    : new LiteralFloat(0, lineNumber);
+            yield zero.sub(rightValue);
+          }
+          yield left.evaluate().sub(right.evaluate());
         }
-        yield left.evaluate().sub(right.evaluate());
-      }
-      case "*" -> left.evaluate().mul(right.evaluate());
-      case "/" -> left.evaluate().div(right.evaluate());
-      case "%" -> left.evaluate().mod(right.evaluate());
-      case "<" -> left.evaluate().smaller(right.evaluate());
-      case "==" -> left.evaluate().equals(right.evaluate());
-      case "!=" -> left.evaluate().notEquals(right.evaluate());
+        case "*" -> left.evaluate().mul(right.evaluate());
+        case "/" -> left.evaluate().div(right.evaluate());
+        case "%" -> left.evaluate().mod(right.evaluate());
+        case "<" -> left.evaluate().smaller(right.evaluate());
+        case "==" -> left.evaluate().equals(right.evaluate());
+        case "!=" -> left.evaluate().notEquals(right.evaluate());
 
-      default -> throw new RuntimeException("Operador aritimético desconhecido: " + op);
-    };
+        default -> throw new VisitException("Operador aritimético desconhecido: " + op, getLine());
+      };
+    } catch (NullPointerException e) {
+      throw new VisitException("Null pointer exception!", getLine());
+    }
   }
 
   @Override

@@ -21,6 +21,11 @@ public class LiteralNull extends Literal {
   }
 
   @Override
+  protected boolean checkArg(Literal arg) {
+    return false;
+  }
+
+  @Override
   public Literal equals(Literal arg) {
     return new LiteralBool(arg.getClass() == LiteralNull.class, lineNumber);
   }
@@ -33,5 +38,10 @@ public class LiteralNull extends Literal {
   @Override
   public int getColumn() {
     return -1;
+  }
+
+  @Override
+  public String toString() {
+    return "NULL";
   }
 }

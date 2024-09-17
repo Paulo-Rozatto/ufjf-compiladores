@@ -5,6 +5,7 @@
 package lang.ast;
 
 import br.ufjf.estudante.util.Pair;
+import br.ufjf.estudante.util.VisitException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,14 +26,18 @@ public class LiteralCustom extends Literal {
     Pair<Type, Literal> p = fields.get(id);
 
     if (p == null) {
-      throw new RuntimeException("Esse tipo não contém campo '" + id + "'");
+      throw new VisitException(
+          "Esse tipo não contém campo '" + id + "'", ((Literal) value).getLine());
     }
 
     if (value.getClass() != p.getFirst().getLiteralClass()) {
-      throw new RuntimeException(
+      throw new VisitException(
           String.format(
               "Esperado tipo %s para campo '%s', obtido tipo %s",
-              p.getFirst().getLiteralClass(), id, value.getClass()));
+              p.getFirst().getLiteralClass().getCanonicalName(),
+              id,
+              value.getClass().getCanonicalName()),
+          ((Literal) value).getLine());
     }
 
     p.setSecond((Literal) value);
@@ -45,6 +50,11 @@ public class LiteralCustom extends Literal {
   @Override
   public Type getType() {
     return TypeCustom.getType(id);
+  }
+
+  @Override
+  protected boolean checkArg(Literal arg) {
+    return false;
   }
 
   @Override
