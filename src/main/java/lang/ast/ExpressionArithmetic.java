@@ -11,6 +11,8 @@ public class ExpressionArithmetic extends Expression {
   private final String op;
   private final Expression left;
   private final Expression right;
+  private Literal leftValue;
+  private Literal rightValue;
 
   public ExpressionArithmetic(String op, Expression left, Expression right, int line) {
     super(line);
@@ -20,50 +22,43 @@ public class ExpressionArithmetic extends Expression {
   }
 
   public void accept(Visitor v) {
+    Literal leftResult = null, rightResult = null;
     if (left != null) {
       left.accept(v);
+      leftResult = left.evaluate();
     }
 
     if (right != null) {
       right.accept(v);
+      rightResult = right.evaluate();
     }
+
+    leftValue = leftResult;
+    rightValue = rightResult;
     v.visit(this);
-  }
-
-  public String getOp() {
-    return op;
-  }
-
-  public Expression getLeft() {
-    return left;
-  }
-
-  public Expression getRight() {
-    return right;
   }
 
   @Override
   public Literal evaluate() {
     try {
       return switch (op) {
-        case "+" -> left.evaluate().add(right.evaluate());
+        case "+" -> leftValue.add(rightValue);
         case "-" -> {
           if (left == null) {
-            Literal rightValue = right.evaluate();
             Literal zero =
                 rightValue.getClass() == LiteralInt.class
                     ? new LiteralInt(0, lineNumber)
                     : new LiteralFloat(0, lineNumber);
             yield zero.sub(rightValue);
           }
-          yield left.evaluate().sub(right.evaluate());
+          yield leftValue.sub(rightValue);
         }
-        case "*" -> left.evaluate().mul(right.evaluate());
-        case "/" -> left.evaluate().div(right.evaluate());
-        case "%" -> left.evaluate().mod(right.evaluate());
-        case "<" -> left.evaluate().smaller(right.evaluate());
-        case "==" -> left.evaluate().equals(right.evaluate());
-        case "!=" -> left.evaluate().notEquals(right.evaluate());
+        case "*" -> leftValue.mul(rightValue);
+        case "/" -> leftValue.div(rightValue);
+        case "%" -> leftValue.mod(rightValue);
+        case "<" -> leftValue.smaller(rightValue);
+        case "==" -> leftValue.equals(rightValue);
+        case "!=" -> leftValue.notEquals(rightValue);
 
         default -> throw new VisitException("Operador aritimético desconhecido: " + op, getLine());
       };

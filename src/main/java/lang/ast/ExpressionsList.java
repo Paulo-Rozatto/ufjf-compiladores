@@ -23,6 +23,10 @@ public class ExpressionsList extends Node {
     return expressions;
   }
 
+  public int size() {
+    return expressions.size();
+  }
+
   public void accept(Visitor v) {
     v.visit(this);
   }

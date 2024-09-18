@@ -136,6 +136,7 @@ public class LValue extends Expression {
     }
 
     Object currentObject = var.getSecond();
+    Type type = null;
     for (Object modifier : modifiers) {
       if (modifier instanceof Expression) {
         ((Expression) modifier).accept(v);
@@ -144,28 +145,28 @@ public class LValue extends Expression {
 
       if (modifier instanceof LiteralInt) {
         if (currentObject instanceof LiteralArray) {
+          type = ((LiteralArray) currentObject).getType();
           currentObject = ((LiteralArray) currentObject).getArray();
         }
 
         currentObject = Array.get(currentObject, ((LiteralInt) modifier).getValue());
       } else if (modifier instanceof String) {
+        type = ((LiteralCustom) currentObject).getField((String) modifier).getFirst();
         currentObject = ((LiteralCustom) currentObject).getField((String) modifier).getSecond();
       } else {
         throw new VisitException("Modificador invalido: " + modifier, getLine());
       }
     }
 
-    Object value = currentObject;
-
-    if (value == null) {
+    if (currentObject == null) {
       return new LiteralNull(getLine());
     }
 
-    if (value.getClass().isArray()) {
-      return new LiteralArray(value, 1);
+    if (currentObject.getClass().isArray()) {
+      return new LiteralArray(currentObject, type, getLine());
     }
 
-    return (Literal) value;
+    return (Literal) currentObject;
   }
 
   public String getId() {
