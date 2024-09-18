@@ -72,7 +72,9 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Definition node) {}
 
   @Override
-  public void visit(DefinitionsList node) {}
+  public void visit(DefinitionsList node) {
+
+  }
 
   @Override
   public void visit(ExpressionArithmetic node) {}
@@ -120,7 +122,9 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Params node) {}
 
   @Override
-  public void visit(Program node) {}
+  public void visit(Program node) {
+    node.getDefList().accept(this);
+  }
 
   @Override
   public void visit(ReturnTypes node) {}

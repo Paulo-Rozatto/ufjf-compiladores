@@ -5,11 +5,14 @@
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class DefinitionsList extends Node {
-  private final Map<String, Definition> definitionMap = new HashMap<>();
+  private final Multimap<String, Definition> definitionMap = ArrayListMultimap.create();
 
   public DefinitionsList(int line) {
     super(line);
@@ -24,7 +27,7 @@ public class DefinitionsList extends Node {
     definitionMap.put(d.getId(), d);
   }
 
-  public Map<String, Definition> getDefinitionMap() {
+  public Multimap<String, Definition> getDefinitionMap() {
     return definitionMap;
   }
 

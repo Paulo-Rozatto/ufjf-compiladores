@@ -4,10 +4,13 @@
 */
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.util.Messenger;
 import br.ufjf.estudante.util.Pair;
+import br.ufjf.estudante.util.VisitException;
+import com.google.common.collect.Multimap;
 import de.jflex.Lexer;
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,7 @@ import lang.ast.ExpressionsList;
 import lang.ast.Function;
 import lang.ast.LValue;
 import lang.ast.Literal;
+import lang.ast.LiteralArray;
 import lang.ast.LiteralBool;
 import lang.ast.LiteralChar;
 import lang.ast.LiteralFloat;
@@ -52,7 +56,7 @@ import lang.ast.TypePrimitive;
 
 public class VisitorInterpreter implements Visitor {
   private final Stack<Map<String, Pair<Type, Literal>>> environments = new Stack<>();
-  private Map<String, Definition> definitionMap;
+  private Multimap<String, Definition> definitionMap;
   private boolean isReturn = false;
 
   @Override
@@ -66,101 +70,23 @@ public class VisitorInterpreter implements Visitor {
 
   @Override
   public void visit(CommandCall call) {
-    Definition def = definitionMap.get(call.getId());
-
-    if (def == null) {
-      throw new RuntimeException("Função não declarada! " + call.getId());
-    }
-
-    if (def.getClass() != Function.class) {
-      throw new RuntimeException(call.getId() + " não é uma função!");
-    }
-
-    Function function = (Function) def;
-    Map<String, Pair<Type, Literal>> env = new HashMap<>();
-
-    if (function.getParams() != null) {
-      if (call.getParams() == null
-          || function.getParams().size() != call.getParams().getExpressions().size()) {
-        int expectedNumberSizes = function.getParams().size();
-        int gotNumberSizes =
-            call.getParams() == null ? 0 : call.getParams().getExpressions().size();
-
-        throw new RuntimeException(
-            String.format(
-                "Esperava-se %d variaveis de retorno, mas %d foram obtidas.",
-                expectedNumberSizes, gotNumberSizes));
-      }
-
-      List<String> paramIds = function.getParams().keySet().stream().toList();
-      List<Type> paramTypes = function.getParams().values().stream().toList();
-      List<Expression> paramExps = call.getParams().getExpressions();
-
-      for (int i = 0; i < function.getParams().size(); i++) {
-        String id = paramIds.get(i);
-        Type type = paramTypes.get(i);
-        Expression exp = paramExps.get(i);
-
-        exp.accept(this);
-
-        env.put(id, new Pair<>(type, exp.evaluate()));
-      }
-    }
-
-    environments.add(env);
-
-    function.accept(this);
-    isReturn = false;
-
-    env = environments.pop();
-
-    List<String> returnVars = call.getReturnVars();
-    if (returnVars != null && !returnVars.isEmpty()) {
-      ReturnTypes returnTypes = function.getReturnTypes();
-
-      if (returnTypes == null || returnTypes.getTypes().size() != returnVars.size()) {
-        int expectedNumberSizes = returnTypes == null ? 0 : returnTypes.getTypes().size();
-        int gotNumberSizes = returnVars.size();
-
-        throw new RuntimeException(
-            String.format(
-                "Esperava-se %d variaveis de retorno, mas %d foram obtidas.",
-                expectedNumberSizes, gotNumberSizes));
-      }
-
-      for (int i = 0; i < returnVars.size(); i++) {
-        String varId = returnVars.get(i);
-        Pair<Type, Literal> value = env.get(i + "return");
-        env.remove(i + "return");
-
-        if (value == null) {
-          throw new RuntimeException(
-              String.format("Faltando retorno %d, variavel %s", i + 1, varId));
-        }
-
-        Pair<Type, Literal> pv = environments.peek().get(varId);
-
-        if (pv != null && pv.getFirst().getLiteralClass() != value.getFirst().getLiteralClass()) {
-          throw new RuntimeException(
-              String.format(
-                  "Não se pode atribuir tipo %s em variável %s",
-                  pv.getFirst().getLiteralClass(), value.getFirst().getLiteralClass()));
-        }
-
-        environments.peek().put(varId, value);
-      }
-    }
+    runFunction(call.getId(), call.getParams(), call.getReturnVars(), call.getLine());
   }
 
   @Override
   public void visit(CommandIf node) {
     Expression expression = node.getExpression();
     expression.accept(this);
-    LiteralBool exp = (LiteralBool) expression.evaluate();
-    if (exp.getValue()) {
-      node.getThen().accept(this);
-    } else if (node.getOtherwise() != null) {
-      node.getOtherwise().accept(this);
+
+    try {
+      LiteralBool exp = (LiteralBool) expression.evaluate();
+      if (exp.getValue()) {
+        node.getThen().accept(this);
+      } else if (node.getOtherwise() != null) {
+        node.getOtherwise().accept(this);
+      }
+    } catch (ClassCastException e) {
+      throw new VisitException("Expressão não booleana!", node.getLine());
     }
   }
 
@@ -171,7 +97,7 @@ public class VisitorInterpreter implements Visitor {
     Literal exp = expression.evaluate();
 
     if (exp.getClass() != LiteralInt.class) {
-      throw new RuntimeException("Iterate espera um inteiro.");
+      throw new VisitException("Iterate espera um inteiro.", iterate.getLine());
     }
 
     int n = ((LiteralInt) exp).getValue();
@@ -214,13 +140,13 @@ public class VisitorInterpreter implements Visitor {
             case Symbols.LIT_CHAR -> new LiteralChar((String) t.value, read.getLine());
             case Symbols.LIT_BOOL -> new LiteralBool((boolean) t.value, read.getLine());
             default ->
-                throw new RuntimeException(
-                    "Entrada inválida, espera-se um Int, Float, Char ou Bool.");
+                throw new VisitException(
+                    "Entrada inválida, espera-se um Int, Float, Char ou Bool.", read.getLine());
           };
       read.getLValue().accept(this);
       read.getLValue().set(literal);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      Messenger.error(e.getMessage(), read.getLine());
     }
   }
 
@@ -259,16 +185,24 @@ public class VisitorInterpreter implements Visitor {
   public void visit(DefinitionsList definitions) {
     definitionMap = definitions.getDefinitionMap();
 
-    Definition main = definitionMap.get("main");
+    Collection<Definition> mainCollection = definitionMap.get("main");
 
-    if (main == null) {
-      throw new RuntimeException("Programa não tem main!");
-    } else if (main.getClass() != Function.class) {
-      throw new RuntimeException("Error: main não é uma função!");
-    } else {
-      CommandCall mainCall = new CommandCall("main", null, null, main.getLine());
-      mainCall.accept(this);
+    if (mainCollection.isEmpty()) {
+      throw new VisitException("Programa não tem main!", definitions.getLine());
     }
+
+    if (mainCollection.size() > 1) {
+      throw new VisitException("Programa tem mais de uma main!", definitions.getLine());
+    }
+
+    Definition main = mainCollection.iterator().next();
+
+    if (main.getClass() != Function.class) {
+      throw new VisitException("Error: main não é uma função!", definitions.getLine());
+    }
+
+    CommandCall mainCall = new CommandCall("main", null, null, main.getLine());
+    mainCall.accept(this);
   }
 
   @Override
@@ -279,24 +213,7 @@ public class VisitorInterpreter implements Visitor {
 
   @Override
   public void visit(ExpressionCall call) {
-    Definition def = definitionMap.get(call.getId());
-
-    if (def == null) {
-      throw new RuntimeException("Função não declarada! " + call.getId());
-    }
-
-    if (def.getClass() != Function.class) {
-      throw new RuntimeException(call.getId() + " não é uma função!");
-    }
-
-    int numberReturns = ((Function) def).getReturnTypes().getTypes().size();
-    List<String> returnVars = new ArrayList<>();
-    for (int i = 0; i < numberReturns; i++) {
-      returnVars.add(String.valueOf(i));
-    }
-
-    CommandCall call1 = new CommandCall(call.getId(), call.getParams(), returnVars, call.getLine());
-    call1.accept(this);
+    runFunction(call.getId(), call.getParams(), null, call.getLine());
   }
 
   @Override
@@ -360,7 +277,177 @@ public class VisitorInterpreter implements Visitor {
     return environments.peek();
   }
 
-  public Map<String, Definition> getDefinitions() {
+  public Multimap<String, Definition> getDefinitions() {
     return definitionMap;
+  }
+
+  private boolean matchTypes(Map<String, Type> params, List<Literal> args) {
+    // se os dois forem null, retorna true
+    if (params == null && args == null) {
+      return true;
+    }
+
+    // se apenas um for null, entao false
+    if (params == null || args == null) {
+      return false;
+    }
+
+    List<Type> types = params.values().stream().toList();
+    if (types.size() != args.size()) {
+      return false;
+    }
+
+    Type expectedType;
+    Literal literal;
+    for (int i = 0; i < types.size(); i++) {
+      expectedType = types.get(i);
+      literal = args.get(i);
+
+      if (expectedType.getDimensions() > 1) {
+        if (!(literal instanceof LiteralArray)) {
+          return false;
+        }
+
+        if (((LiteralArray) literal).getElType().getLiteralClass()
+            != expectedType.getLiteralClass()) {
+          return false;
+        }
+      } else if (expectedType.getLiteralClass() != literal.getClass()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private void runFunction(String id, ExpressionsList params, List<String> returnVars, int line) {
+    Collection<Definition> defCollection = definitionMap.get(id);
+
+    if (defCollection.isEmpty()) {
+      throw new VisitException("Função não declarada! " + id, line);
+    }
+
+    // Faça a avaliação dos argumentos passados
+    List<Literal> args =
+        params == null
+            ? null
+            : params.getExpressions().stream()
+                .map(
+                    e -> {
+                      e.accept(this);
+                      return e.evaluate();
+                    })
+                .toList();
+
+    // Encontrar uma função que tenha o mesmo número de parâmetros e tipos de parâmetros
+    Function function = null;
+    boolean isFunction = false;
+    boolean matchArgs = false;
+
+    for (Definition def : defCollection.stream().toList()) {
+      isFunction = def.getClass() == Function.class;
+
+      if (!isFunction) {
+        continue;
+      }
+
+      function = (Function) def;
+
+      // auxiliar checa tamanho e tipo
+      matchArgs = matchTypes(function.getParams(), args);
+
+      if (matchArgs) {
+        break;
+      }
+    }
+
+    if (!isFunction) {
+      throw new VisitException("Nenhuma função declarada com id '" + id + "'", line);
+    }
+
+    if (!matchArgs) {
+      throw new VisitException(
+          String.format(
+              "Não há definição de %s que receba %s.",
+              id, args == null ? "[]" : args.stream().map(Literal::getClass)),
+          line);
+    }
+
+    // Cria enviroment com variaveis passadas por parametro
+    Map<String, Pair<Type, Literal>> env = new HashMap<>();
+
+    if (function.getParams() != null) {
+      List<String> paramIds = function.getParams().keySet().stream().toList();
+      for (int i = 0; i < function.getParams().size(); i++) {
+        Literal arg = args.get(i);
+        env.put(paramIds.get(i), new Pair<>(arg.getType(), arg));
+      }
+    }
+
+    // Executa função
+    environments.add(env);
+    function.accept(this);
+    isReturn = false;
+    env = environments.pop();
+
+    if (returnVars == null) {
+      if (function.getReturnTypes() == null) {
+        return;
+      }
+
+      // Retornos sem variavel atribuida -> f()[0], f()[1], etc
+      List<Type> returnTypes = function.getReturnTypes().getTypes();
+      for (int i = 0; i < returnTypes.size(); i++) {
+        Pair<Type, Literal> value = env.get(i + "return");
+        env.remove(i + "return");
+
+        if (value == null) {
+          throw new VisitException(
+              String.format("Faltando %dº retorno.", i + 1), function.getLine());
+        }
+
+        if (value.getFirst().getClass() != returnTypes.get(i).getClass()) {
+          throw new VisitException(
+              String.format(
+                  "Esperava-se retorno tipo %s, obtido tipo %s",
+                  returnTypes.get(i).getClass().getCanonicalName(),
+                  value.getFirst().getClass().getCanonicalName()),
+              function.getLine());
+        }
+
+        environments.peek().put(String.valueOf(i), value);
+      }
+
+      return;
+    }
+
+    if (function.getReturnTypes() == null) {
+      throw new VisitException(String.format("Função '%s' não têm retorno", id), line);
+    }
+
+    // Retornos com variavel atribuida -> f()<x>, f()<x,y>, etc
+    for (int i = 0; i < returnVars.size(); i++) {
+      String varId = returnVars.get(i);
+      Pair<Type, Literal> value = env.get(i + "return");
+      // env.remove(i + "return"); // acho que nao precisa
+
+      if (value == null) {
+        throw new VisitException(
+            String.format("Faltando %dº retorno, variavel %s", i + 1, varId), line);
+      }
+
+      Pair<Type, Literal> pv = environments.peek().get(varId);
+
+      if (pv != null && pv.getFirst().getLiteralClass() != value.getFirst().getLiteralClass()) {
+        throw new VisitException(
+            String.format(
+                "Não se pode atribuir tipo %s em variável %s",
+                value.getFirst().getLiteralClass().getCanonicalName(),
+                pv.getFirst().getLiteralClass().getCanonicalName()),
+            line);
+      }
+
+      environments.peek().put(varId, value);
+    }
   }
 }

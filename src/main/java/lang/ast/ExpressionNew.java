@@ -7,13 +7,14 @@ package lang.ast;
 import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
+import com.google.common.collect.Multimap;
 import java.lang.reflect.Array;
-import java.util.Map;
+import java.util.Iterator;
 
 public class ExpressionNew extends Expression {
   private final Type type;
   private final Expression exp;
-  private Map<String, Definition> definitionMap = null;
+  private Multimap<String, Definition> definitionMap = null;
 
   public ExpressionNew(Type type, int line) {
     super(line);
@@ -60,7 +61,7 @@ public class ExpressionNew extends Expression {
         array = tempArray;
       }
 
-      return new LiteralArray(array, lineNumber);
+      return new LiteralArray(array, type, lineNumber);
     }
 
     if (type.getClass() == TypePrimitive.class) {
@@ -72,12 +73,13 @@ public class ExpressionNew extends Expression {
     }
 
     TypeCustom customType = (TypeCustom) type;
-    Definition typeDefinition = definitionMap.get(customType.getId());
+    Iterator<Definition> iterator = definitionMap.get(customType.getId()).iterator();
 
-    if (typeDefinition == null) {
+    if (!iterator.hasNext()) {
       throw new VisitException("Tipo '" + customType.getId() + "' inexistente", getLine());
     }
 
+    Definition typeDefinition = iterator.next();
     if (typeDefinition.getClass() != Data.class) {
       throw new VisitException(customType.getId() + " não é um tipo", getLine());
     }

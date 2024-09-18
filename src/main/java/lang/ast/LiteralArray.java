@@ -8,10 +8,12 @@ import java.lang.reflect.Array;
 
 public class LiteralArray extends Literal {
   private final Object array;
+  private final Type elType;
 
-  public LiteralArray(Object array, int line) {
+  public LiteralArray(Object array, Type type, int line) {
     super(line);
     this.array = array;
+    this.elType = type;
   }
 
   private static void arrayToStringHelper(Object array, StringBuilder sb) {
@@ -37,6 +39,10 @@ public class LiteralArray extends Literal {
   @Override
   public Type getType() {
     return new TypePrimitive(this.getClass(), lineNumber);
+  }
+
+  public Type getElType() {
+    return elType;
   }
 
   @Override
