@@ -8,9 +8,6 @@ import br.ufjf.estudante.visitor.Visitor;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class DefinitionsList extends Node {
   private final Multimap<String, Definition> definitionMap = ArrayListMultimap.create();
 
