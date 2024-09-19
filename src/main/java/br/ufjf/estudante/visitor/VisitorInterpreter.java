@@ -12,9 +12,11 @@ import de.jflex.Lexer;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Stack;
 import java_cup.runtime.Symbol;
 import lang.Symbols;
@@ -185,6 +187,20 @@ public class VisitorInterpreter implements Visitor {
   public void visit(DefinitionsList definitions) {
     definitionMap = definitions.getDefinitionMap();
 
+    List<String> datas =
+        definitionMap.keys().stream().filter(e -> Character.isUpperCase(e.charAt(0))).toList();
+    Set<String> uniqueDatas = new HashSet<>();
+
+    datas.forEach(
+        data -> {
+          if (uniqueDatas.contains(data)) {
+            throw new VisitException(
+                "Tipo '" + data + "' duplicado",
+                definitionMap.get(data).iterator().next().getLine());
+          }
+          uniqueDatas.add(data);
+        });
+
     Collection<Definition> mainCollection = definitionMap.get("main");
 
     if (mainCollection.isEmpty()) {
@@ -196,10 +212,6 @@ public class VisitorInterpreter implements Visitor {
     }
 
     Definition main = mainCollection.iterator().next();
-
-    if (main.getClass() != Function.class) {
-      throw new VisitException("Error: main não é uma função!", definitions.getLine());
-    }
 
     CommandCall mainCall = new CommandCall("main", null, null, main.getLine());
     mainCall.accept(this);
