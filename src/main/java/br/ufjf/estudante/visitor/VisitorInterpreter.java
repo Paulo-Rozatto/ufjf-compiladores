@@ -54,7 +54,6 @@ import lang.ast.Program;
 import lang.ast.ReturnTypes;
 import lang.ast.Type;
 import lang.ast.TypeCustom;
-import lang.ast.TypePrimitive;
 
 public class VisitorInterpreter implements Visitor {
   private final Stack<Map<String, Pair<Type, Literal>>> environments = new Stack<>();
@@ -281,9 +280,6 @@ public class VisitorInterpreter implements Visitor {
 
   @Override
   public void visit(Type node) {}
-
-  @Override
-  public void visit(TypePrimitive node) {}
 
   public Map<String, Pair<Type, Literal>> getEnv() {
     return environments.peek();

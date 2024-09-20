@@ -5,7 +5,11 @@ import java.util.Objects;
 
 public class SCustom extends SType {
   private final String id;
-  private final Map<String, SType> fields;
+  private Map<String, SType> fields;
+
+  public SCustom(String id) {
+    this.id = id;
+  }
 
   public SCustom(String id, Map<String, SType> fields) {
     this.id = id;
@@ -18,6 +22,10 @@ public class SCustom extends SType {
 
   public Map<String, SType> getFields() {
     return fields;
+  }
+
+  public void setFields(Map<String, SType> fields) {
+    this.fields = fields;
   }
 
   @Override

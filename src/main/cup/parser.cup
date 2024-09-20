@@ -6,6 +6,7 @@ import lang.ast.*;
 import lang.parser.ParseAdaptor;
 import java.util.ArrayList;
 import java.util.List;
+import br.ufjf.estudante.singletons.*;
 
 parser code{:
     public boolean syntaxErrors;
@@ -22,7 +23,7 @@ terminal String IDENTIFIER;
 // Keywords
 terminal IF, ELSE, PRINT, READ, ITERATE, RETURN, NEW, DATA;
 // Primitives
-terminal TypePrimitive INT, FLOAT, CHAR, BOOL;
+terminal Type INT, FLOAT, CHAR, BOOL;
 terminal String CUSTOM;
 // Literals
 terminal int     LIT_INT;
@@ -94,10 +95,10 @@ retTypesList ::= retTypesList:r COMMA type:t                                    
 type ::= type:t SQUARE_L SQUARE_R                                               {: RESULT = t; t.increaseDimensions(); :}
     | btype:b                                                                   {: RESULT = b; :};
 
-btype ::= INT:i                                                                 {: RESULT = new TypePrimitive(LiteralInt.class, ileft); :}
-    | FLOAT:i                                                                   {: RESULT = new TypePrimitive(LiteralFloat.class, ileft); :}
-    | CHAR:i                                                                    {: RESULT = new TypePrimitive(LiteralChar.class, ileft); :}
-    | BOOL:i                                                                    {: RESULT = new TypePrimitive(LiteralBool.class, ileft); :}
+btype ::= INT:i                                                                 {: RESULT = new TypeInt(ileft); :}
+    | FLOAT:i                                                                   {: RESULT = new TypeFloat(ileft); :}
+    | CHAR:i                                                                    {: RESULT = new TypeChar(ileft); :}
+    | BOOL:i                                                                    {: RESULT = new TypeBool(ileft); :}
     | CUSTOM:i                                                                  {: RESULT = new TypeCustom(i, ileft); :};
 
 cmdList ::= cmdList:cl cmd:c                                                    {: RESULT = cl; RESULT.add(c); :}

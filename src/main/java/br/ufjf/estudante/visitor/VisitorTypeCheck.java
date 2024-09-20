@@ -1,5 +1,10 @@
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.singletons.SCustom;
+import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.util.VisitException;
+import java.util.HashMap;
+import java.util.Map;
 import lang.ast.Command;
 import lang.ast.CommandAttribution;
 import lang.ast.CommandCall;
@@ -32,9 +37,10 @@ import lang.ast.Program;
 import lang.ast.ReturnTypes;
 import lang.ast.Type;
 import lang.ast.TypeCustom;
-import lang.ast.TypePrimitive;
 
 public class VisitorTypeCheck implements Visitor {
+  private final Map<String, SCustom> customMap = new HashMap<>();
+
   @Override
   public void visit(CommandAttribution node) {}
 
@@ -63,7 +69,26 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(CommandsList node) {}
 
   @Override
-  public void visit(Data node) {}
+  public void visit(Data data) {
+    if (customMap.get(data.getId()) != null) {
+      throw new VisitException("Tipo " + data.getId() + "já declarado!", data.getLine());
+    }
+
+    // todo: aqui deveria checar se campos são duplicados, mas como estamos usando HashMap campos
+    // duplicados são sobreescritos
+
+    Map<String, SType> fields = new HashMap<>();
+    data.getDeclarations()
+        .forEach(
+            (id, type) -> {
+              fields.put(id, type.getSType());
+            });
+
+   TypeCustom typeCustom = TypeCustom.getType(data.getId());
+   SCustom s = (SCustom) typeCustom.getSType();
+   s.setFields(fields);
+    customMap.put(data.getId(), s);
+  }
 
   @Override
   public void visit(Declarations node) {}
@@ -72,8 +97,10 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Definition node) {}
 
   @Override
-  public void visit(DefinitionsList node) {
-
+  public void visit(DefinitionsList definitions) {
+    for (Map.Entry<String, Definition> definition : definitions.getDefinitionMap().entries()) {
+      definition.getValue().accept(this);
+    }
   }
 
   @Override
@@ -134,7 +161,4 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(Type node) {}
-
-  @Override
-  public void visit(TypePrimitive node) {}
 }

@@ -74,7 +74,7 @@ public class LiteralBool extends Literal {
   }
 
   public Type getType() {
-    return new TypePrimitive(this.getClass(), lineNumber);
+    return new TypeBool(lineNumber);
   }
 
   @Override

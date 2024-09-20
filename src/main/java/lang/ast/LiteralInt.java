@@ -4,6 +4,7 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.singletons.SInt;
 import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
@@ -23,8 +24,12 @@ public class LiteralInt extends Literal {
     return value;
   }
 
+  public SInt getSType() {
+    return SInt.newSInt();
+  }
+
   public Type getType() {
-    return new TypePrimitive(this.getClass(), lineNumber);
+    return new TypeInt(lineNumber);
   }
 
   @Override

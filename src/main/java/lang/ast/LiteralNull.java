@@ -17,7 +17,7 @@ public class LiteralNull extends Literal {
   }
 
   public Type getType() {
-    return null;
+    return new TypeNull(lineNumber);
   }
 
   @Override
@@ -33,11 +33,6 @@ public class LiteralNull extends Literal {
   @Override
   public Literal notEquals(Literal arg) {
     return new LiteralBool(arg.getClass() != LiteralNull.class, lineNumber);
-  }
-
-  @Override
-  public int getColumn() {
-    return -1;
   }
 
   @Override

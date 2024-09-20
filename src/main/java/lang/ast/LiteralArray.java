@@ -38,7 +38,7 @@ public class LiteralArray extends Literal {
 
   @Override
   public Type getType() {
-    return new TypePrimitive(this.getClass(), lineNumber);
+    return new TypeArray(lineNumber);
   }
 
   public Type getElType() {

@@ -4,6 +4,10 @@
 */
 package lang.ast;
 
+import br.ufjf.estudante.singletons.SArray;
+import br.ufjf.estudante.singletons.SBoolean;
+import br.ufjf.estudante.singletons.SCustom;
+import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.visitor.Visitor;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +31,7 @@ public class TypeCustom extends Type {
   }
 
   @Override
-  public Class<?> getLiteralClass() {
+  public Class<LiteralCustom> getLiteralClass() {
     return LiteralCustom.class;
   }
 
@@ -40,7 +44,17 @@ public class TypeCustom extends Type {
   }
 
   @Override
-  public int getColumn() {
-    return -1;
+  public SType getSType() {
+    SCustom custom = new SCustom(id);
+
+    if (getDimensions() > 1) {
+      SArray sType = new SArray(custom);
+      for (int i = 0; i < getDimensions(); i++) {
+        sType = new SArray(sType);
+      }
+    }
+
+    return SBoolean.newSBoolean();
   }
+
 }
