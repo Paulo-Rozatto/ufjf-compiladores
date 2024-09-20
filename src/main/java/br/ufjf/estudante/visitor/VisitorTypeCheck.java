@@ -6,9 +6,12 @@ import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.util.VisitException;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lang.ast.Command;
 import lang.ast.CommandAttribution;
 import lang.ast.CommandCall;
@@ -45,6 +48,8 @@ import lang.ast.TypeCustom;
 public class VisitorTypeCheck implements Visitor {
   private final Map<String, SCustom> customMap = new HashMap<>();
   private final Multimap<String, SFunction> functionMap = ArrayListMultimap.create();
+  //  private final Stack<Map<String, SType>> enviroments = new Stack<>();
+  private Map<String, SType> enviroment;
 
   @Override
   public void visit(CommandAttribution node) {}
@@ -103,8 +108,59 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(DefinitionsList definitions) {
-    for (Map.Entry<String, Definition> definition : definitions.getDefinitionMap().entries()) {
-      definition.getValue().accept(this);
+    List<Function> functionList = new ArrayList<>();
+
+    // Definicoes podem ser Datas ou Functions
+    // Datas podem ser visitadas e registradas na visita
+    // Funções precisam ser registradas e depois visitadas
+    for (Map.Entry<String, Definition> entry : definitions.getDefinitionMap().entries()) {
+      Definition definition = entry.getValue();
+
+      // Visita Data se for o caso e pula para a iteração seguinte
+      if (definition instanceof Data) {
+        definition.accept(this);
+        continue;
+      }
+
+      // Senão, pegue a função e os seus tipos de argumentos
+      Function function = (Function) definition;
+      SType[] argTypes =
+          function.getParams() == null
+              ? null
+              : function.getParams().values().stream().map(Type::getSType).toArray(SType[]::new);
+
+      // Crie o tipo Singleton do visitor de type check
+      SFunction newFunction = new SFunction(argTypes);
+
+      // Cheque se a função com o mesmo nome e parâmetros já não foi definida
+      Collection<SFunction> definedFunctions = functionMap.get(function.getId());
+      if (!definedFunctions.isEmpty()) {
+        definedFunctions.forEach(
+            sFunction -> {
+              if (sFunction.match(newFunction)) {
+                throw new VisitException("Função duplicada!", function.getLine());
+              }
+            });
+      }
+
+      // Então registre a função
+      functionMap.put(definition.getId(), newFunction);
+      functionList.add(function);
+    }
+
+    Collection<SFunction> mains = functionMap.get("main");
+
+    if (mains.isEmpty()) {
+      throw new VisitException("Programa não têm main!", definitions.getLine());
+    }
+
+    if (mains.size() > 1) {
+      throw new VisitException("Mais de uma main declarada!", definitions.getLine());
+    }
+
+    // Registrados as declarações, visite as funções
+    for (Function function : functionList) {
+      function.accept(this);
     }
   }
 
@@ -128,34 +184,38 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(Function function) {
-    SType[] argTypes =
-        function.getParams() == null
-            ? null
-            : function.getParams().values().stream().map(Type::getSType).toArray(SType[]::new);
-
-    SType[] returnTypes =
-        function.getReturnTypes() == null
-            ? null
-            : function.getReturnTypes().getTypes().stream()
-                .map(Type::getSType)
-                .toArray(SType[]::new);
-
-    SFunction sFunction = new SFunction(argTypes, returnTypes);
-    Collection<SFunction> declaredFunctions = functionMap.get(function.getId());
-
-    if (declaredFunctions.isEmpty()) {
-      functionMap.put(function.getId(), sFunction);
-      return;
+    if (Objects.equals(function.getId(), "main") && function.getParams() != null) {
+      throw new VisitException("Main não aceita argumentos!", function.getLine());
     }
 
-    declaredFunctions
-        .iterator()
-        .forEachRemaining(
-            declaredFunction -> {
-              if (declaredFunction.match(sFunction)) {
-                throw new VisitException("Função já declarada", function.getLine());
-              }
-            });
+    Map<String, SType> env = new HashMap<>();
+
+    if (function.getParams() != null) {
+      function.getParams().forEach((id, type) -> env.put(id, type.getSType()));
+    }
+
+    enviroment = env;
+
+    function.getCommandsList().accept(this);
+
+    if (function.getReturnTypes() != null && function.getReturnTypes().getTypes() != null) {
+      List<Type> typeList = function.getReturnTypes().getTypes();
+      SType returnType;
+      for (int i = 0; i < typeList.size(); i++) {
+        returnType = env.get(String.valueOf(i));
+
+        if (returnType == null) {
+          throw new VisitException("Faltando " + (i + 1) + "º retorno.", function.getLine());
+        }
+
+        SType expectedType = typeList.get(i).getSType();
+        if (!returnType.match(expectedType)) {
+          throw new VisitException(
+              String.format("Esperava retorno tipo %s, obtido tipo %s", expectedType, returnType),
+              function.getLine());
+        }
+      }
+    }
   }
 
   @Override
@@ -183,8 +243,8 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Params node) {}
 
   @Override
-  public void visit(Program node) {
-    node.getDefList().accept(this);
+  public void visit(Program program) {
+    program.getDefList().accept(this);
   }
 
   @Override
