@@ -1,6 +1,5 @@
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SArray;
 import br.ufjf.estudante.singletons.SType;
 
 public class TypeArray extends Type {

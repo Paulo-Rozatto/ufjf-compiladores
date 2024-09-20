@@ -2,9 +2,11 @@ package br.ufjf.estudante.singletons;
 
 public class SFunction extends SType {
   private final SType[] argTypes;
+  private final SType[] returnTypes;
 
-  public SFunction(SType[] argTypes) {
+  public SFunction(SType[] argTypes, SType[] returnTypes) {
     this.argTypes = argTypes;
+    this.returnTypes = returnTypes;
   }
 
   public SType[] getArgTypes() {
