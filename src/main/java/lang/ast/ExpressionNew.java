@@ -64,7 +64,7 @@ public class ExpressionNew extends Expression {
       return new LiteralArray(array, type, lineNumber);
     }
 
-    if (type.getClass() == TypePrimitive.class) {
+    if (type.getClass() != TypeCustom.class) {
       throw new VisitException("Instanciar primitivo é inválido", getLine());
     }
 

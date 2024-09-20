@@ -24,7 +24,7 @@ public class LiteralFloat extends Literal {
   }
 
   public Type getType() {
-    return new TypePrimitive(this.getClass(), lineNumber);
+    return new TypeFloat(lineNumber);
   }
 
   @Override

@@ -36,7 +36,6 @@ import lang.ast.Program;
 import lang.ast.ReturnTypes;
 import lang.ast.Type;
 import lang.ast.TypeCustom;
-import lang.ast.TypePrimitive;
 
 public interface Visitor {
   void visit(CommandAttribution node);
@@ -102,6 +101,4 @@ public interface Visitor {
   void visit(TypeCustom node);
 
   void visit(Type node);
-
-  void visit(TypePrimitive node);
 }
