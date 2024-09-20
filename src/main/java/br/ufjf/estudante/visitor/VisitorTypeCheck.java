@@ -1,8 +1,12 @@
 package br.ufjf.estudante.visitor;
 
 import br.ufjf.estudante.singletons.SCustom;
+import br.ufjf.estudante.singletons.SFunction;
 import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.util.VisitException;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import lang.ast.Command;
@@ -40,6 +44,7 @@ import lang.ast.TypeCustom;
 
 public class VisitorTypeCheck implements Visitor {
   private final Map<String, SCustom> customMap = new HashMap<>();
+  private final Multimap<String, SFunction> functionMap = ArrayListMultimap.create();
 
   @Override
   public void visit(CommandAttribution node) {}
@@ -84,9 +89,9 @@ public class VisitorTypeCheck implements Visitor {
               fields.put(id, type.getSType());
             });
 
-   TypeCustom typeCustom = TypeCustom.getType(data.getId());
-   SCustom s = (SCustom) typeCustom.getSType();
-   s.setFields(fields);
+    TypeCustom typeCustom = TypeCustom.getType(data.getId());
+    SCustom s = (SCustom) typeCustom.getSType();
+    s.setFields(fields);
     customMap.put(data.getId(), s);
   }
 
@@ -122,7 +127,36 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(ExpressionsList node) {}
 
   @Override
-  public void visit(Function node) {}
+  public void visit(Function function) {
+    SType[] argTypes =
+        function.getParams() == null
+            ? null
+            : function.getParams().values().stream().map(Type::getSType).toArray(SType[]::new);
+
+    SType[] returnTypes =
+        function.getReturnTypes() == null
+            ? null
+            : function.getReturnTypes().getTypes().stream()
+                .map(Type::getSType)
+                .toArray(SType[]::new);
+
+    SFunction sFunction = new SFunction(argTypes, returnTypes);
+    Collection<SFunction> declaredFunctions = functionMap.get(function.getId());
+
+    if (declaredFunctions.isEmpty()) {
+      functionMap.put(function.getId(), sFunction);
+      return;
+    }
+
+    declaredFunctions
+        .iterator()
+        .forEachRemaining(
+            declaredFunction -> {
+              if (declaredFunction.match(sFunction)) {
+                throw new VisitException("Função já declarada", function.getLine());
+              }
+            });
+  }
 
   @Override
   public void visit(LiteralBool node) {}

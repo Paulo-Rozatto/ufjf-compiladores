@@ -1,6 +1,5 @@
 package lang.ast;
 
-
 import br.ufjf.estudante.singletons.SInt;
 import br.ufjf.estudante.singletons.SType;
 

@@ -3,7 +3,9 @@
   Paulo Victor de M. Rozatto  - 201935027
 */
 import br.ufjf.estudante.util.VisitException;
+import br.ufjf.estudante.visitor.Visitor;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
+import br.ufjf.estudante.visitor.VisitorTypeCheck;
 import de.jflex.Lexer;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -26,8 +28,9 @@ public class SemanticTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    VisitorInterpreter interpreter = new VisitorInterpreter();
-    prog.accept(interpreter);
+    //    VisitorInterpreter visitor = new VisitorInterpreter();
+    Visitor visitor = new VisitorTypeCheck();
+    prog.accept(visitor);
   }
 
   @Test(groups = {"accept"})
