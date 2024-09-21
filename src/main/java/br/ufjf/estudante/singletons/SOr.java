@@ -1,9 +1,9 @@
 package br.ufjf.estudante.singletons;
 
-public class SMulti extends SType {
+public class SOr extends SType {
   private final SType[] possibleTypes;
 
-  public SMulti(SType[] possibleTypes) {
+  public SOr(SType[] possibleTypes) {
     this.possibleTypes = possibleTypes;
   }
 

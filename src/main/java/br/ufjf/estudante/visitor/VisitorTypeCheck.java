@@ -7,8 +7,8 @@ import br.ufjf.estudante.singletons.SCustom;
 import br.ufjf.estudante.singletons.SFloat;
 import br.ufjf.estudante.singletons.SFunction;
 import br.ufjf.estudante.singletons.SInt;
-import br.ufjf.estudante.singletons.SMulti;
 import br.ufjf.estudante.singletons.SNull;
+import br.ufjf.estudante.singletons.SOr;
 import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.util.VisitException;
 import com.google.common.collect.ArrayListMultimap;
@@ -107,7 +107,22 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(CommandIf node) {}
+  public void visit(CommandIf commandIf) {
+    commandIf.getExpression().accept(this);
+    SType expression = stack.pop();
+
+    if (!(expression instanceof SBoolean)) {
+      throw new VisitException(
+          "Condicional espera Bool, recebeu " + expression, commandIf.getLine());
+    }
+
+    commandIf.getThen().accept(this);
+    isReturn = false;
+
+    if (commandIf.getOtherwise() != null) {
+      commandIf.getOtherwise().accept(this);
+    }
+  }
 
   @Override
   public void visit(CommandIterate node) {}
@@ -127,7 +142,16 @@ public class VisitorTypeCheck implements Visitor {
     for (int i = 0; i < returns.size(); i++) {
       returns.get(i).accept(this);
       SType value = stack.pop();
-      environment.put(String.valueOf(i), value);
+      String position = String.valueOf(i);
+      SType envReturn = environment.get(position);
+
+      if (envReturn == null) {
+        environment.put(position, value);
+      } else if (!envReturn.match(value)) {
+        throw new VisitException(
+            String.format("Função não pode retornar %s e %s na mesma posição.", value, envReturn),
+            commandReturn.getLine());
+      }
     }
     isReturn = true;
   }
@@ -135,9 +159,6 @@ public class VisitorTypeCheck implements Visitor {
   @Override
   public void visit(CommandsList commandsList) {
     for (Command command : commandsList.getCommands()) {
-      if (isReturn) {
-        break;
-      }
       command.accept(this);
     }
   }
@@ -252,7 +273,7 @@ public class VisitorTypeCheck implements Visitor {
           "Tipo " + modifier + " não pode ser usado para acessar retorno", call.getLine());
     }
 
-    stack.push(new SMulti(match.getReturnTypes()));
+    stack.push(new SOr(match.getReturnTypes()));
   }
 
   @Override
@@ -299,9 +320,14 @@ public class VisitorTypeCheck implements Visitor {
     isReturn = false;
     function.getCommandsList().accept(this);
 
-    if (function.getReturnTypes() != null && function.getReturnTypes().getTypes() != null) {
+    if (function.getReturnTypes() != null) {
+      if (!isReturn) {
+        throw new VisitException("Faltando retorno!", function.getLine());
+      }
+
       List<Type> typeList = function.getReturnTypes().getTypes();
       SType returnType;
+
       for (int i = 0; i < typeList.size(); i++) {
         returnType = env.get(String.valueOf(i));
 
