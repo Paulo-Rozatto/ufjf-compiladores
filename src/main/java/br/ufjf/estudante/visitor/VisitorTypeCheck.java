@@ -116,12 +116,16 @@ public class VisitorTypeCheck implements Visitor {
           "Condicional espera Bool, recebeu " + expression, commandIf.getLine());
     }
 
+    isReturn = false;
     commandIf.getThen().accept(this);
+    boolean thenReturn = isReturn;
     isReturn = false;
 
     if (commandIf.getOtherwise() != null) {
       commandIf.getOtherwise().accept(this);
     }
+
+    isReturn = isReturn && thenReturn;
   }
 
   @Override
