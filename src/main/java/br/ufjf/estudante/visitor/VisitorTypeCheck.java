@@ -1,7 +1,13 @@
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.singletons.SArray;
+import br.ufjf.estudante.singletons.SBoolean;
+import br.ufjf.estudante.singletons.SChar;
 import br.ufjf.estudante.singletons.SCustom;
+import br.ufjf.estudante.singletons.SFloat;
 import br.ufjf.estudante.singletons.SFunction;
+import br.ufjf.estudante.singletons.SInt;
+import br.ufjf.estudante.singletons.SNull;
 import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.util.VisitException;
 import com.google.common.collect.ArrayListMultimap;
@@ -12,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Stack;
 import lang.ast.Command;
 import lang.ast.CommandAttribution;
 import lang.ast.CommandCall;
@@ -48,11 +55,29 @@ import lang.ast.TypeCustom;
 public class VisitorTypeCheck implements Visitor {
   private final Map<String, SCustom> customMap = new HashMap<>();
   private final Multimap<String, SFunction> functionMap = ArrayListMultimap.create();
-  //  private final Stack<Map<String, SType>> enviroments = new Stack<>();
-  private Map<String, SType> enviroment;
+  private final Stack<SType> stack = new Stack<>();
+  private Map<String, SType> environment;
+
+  private boolean isReturn = false;
 
   @Override
-  public void visit(CommandAttribution node) {}
+  public void visit(CommandAttribution attribution) {
+    attribution.getExpression().accept(this);
+    attribution.getlValue().accept(this);
+
+    SType variable = stack.pop(), value = stack.pop();
+
+    if (SNull.newSNull().match(variable)) {
+      environment.put(attribution.getlValue().getId(), value);
+      return;
+    }
+
+    if (!variable.match(value)) {
+      throw new VisitException(
+          String.format("Não se pode atribuir %s em variável do tipo %s.", value, variable),
+          attribution.getLine());
+    }
+  }
 
   @Override
   public void visit(CommandCall node) {}
@@ -76,7 +101,14 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(CommandReturn node) {}
 
   @Override
-  public void visit(CommandsList node) {}
+  public void visit(CommandsList commandsList) {
+    for (Command command : commandsList.getCommands()) {
+      if (isReturn) {
+        break;
+      }
+      command.accept(this);
+    }
+  }
 
   @Override
   public void visit(Data data) {
@@ -177,7 +209,25 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Expression node) {}
 
   @Override
-  public void visit(ExpressionNew node) {}
+  public void visit(ExpressionNew newExpression) {
+    // todo: checar index out of bounds?
+    SType type = newExpression.getType().getSType();
+
+    if (type instanceof SCustom) {
+      type = customMap.get(((SCustom) type).getId());
+    }
+
+    int dimensions = newExpression.getType().getDimensions();
+    for (int i = 1; i < dimensions; i++) {
+      type = new SArray(type);
+    }
+
+    if (!(type instanceof SCustom) && !(type instanceof SArray)) {
+      throw new VisitException("Não se pode instanciar tipo " + type, newExpression.getLine());
+    }
+
+    stack.push(type);
+  }
 
   @Override
   public void visit(ExpressionsList node) {}
@@ -194,8 +244,9 @@ public class VisitorTypeCheck implements Visitor {
       function.getParams().forEach((id, type) -> env.put(id, type.getSType()));
     }
 
-    enviroment = env;
+    environment = env;
 
+    isReturn = false;
     function.getCommandsList().accept(this);
 
     if (function.getReturnTypes() != null && function.getReturnTypes().getTypes() != null) {
@@ -219,22 +270,87 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(LiteralBool node) {}
+  public void visit(LiteralBool node) {
+    stack.push(SBoolean.newSBoolean());
+  }
 
   @Override
-  public void visit(LiteralChar node) {}
+  public void visit(LiteralChar node) {
+    stack.push(SChar.newSChar());
+  }
 
   @Override
-  public void visit(LiteralFloat node) {}
+  public void visit(LiteralFloat node) {
+    stack.push(SFloat.newSFloat());
+  }
 
   @Override
-  public void visit(LiteralInt node) {}
+  public void visit(LiteralInt node) {
+    stack.push(SInt.newSInt());
+  }
 
   @Override
-  public void visit(LiteralNull node) {}
+  public void visit(LiteralNull node) {
+    stack.push(SNull.newSNull());
+  }
 
   @Override
-  public void visit(LValue node) {}
+  public void visit(LValue lValue) {
+    //    SType value = stack.pop();
+
+    SType variable = environment.get(lValue.getId());
+    if (variable == null) {
+      if (!lValue.getModifiers().isEmpty()) {
+        throw new VisitException(
+            "Não se pode realizar acessos em variável não definida!", lValue.getLine());
+      }
+
+      //      environment.put(lValue.getId(), value);
+      stack.push(SNull.newSNull());
+      return;
+    }
+
+    boolean error = false;
+
+    for (Object modifier : lValue.getModifiers()) {
+
+      if (modifier instanceof String) {
+        variable = ((SCustom) variable).getFieldType((String) modifier);
+        if (variable == null) {
+          throw new VisitException("Campo '" + modifier + "' inexistente!", lValue.getLine());
+        }
+        continue;
+      }
+
+      if (modifier instanceof Expression) {
+        ((Expression) modifier).accept(this);
+        SType expressionValue = stack.pop();
+
+        if (!(expressionValue instanceof SInt)) {
+          error = true;
+          break;
+        }
+
+        variable = ((SArray) variable).getType();
+        continue;
+      }
+
+      if (modifier instanceof SInt) {
+        variable = ((SArray) variable).getType();
+        continue;
+      }
+
+      error = true;
+      break;
+    }
+
+    // Se houve erro
+    if (error) {
+      throw new VisitException("Acesso inválido!", lValue.getLine());
+    }
+
+    stack.push(variable);
+  }
 
   @Override
   public void visit(Node node) {}
