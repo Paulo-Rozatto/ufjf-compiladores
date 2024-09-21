@@ -22,6 +22,18 @@ public class SFunction extends SType {
     return argTypes.length;
   }
 
+  public SType[] getReturnTypes() {
+    return returnTypes;
+  }
+
+  public SType getReturn(int i) {
+    return returnTypes == null ? SNull.newSNull() : returnTypes[i];
+  }
+
+  public int getReturnLen() {
+    return returnTypes == null ? 0 : returnTypes.length;
+  }
+
   @Override
   public boolean match(SType value) {
     if (!(value instanceof SFunction func)) {

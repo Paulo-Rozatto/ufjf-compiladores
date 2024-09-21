@@ -7,6 +7,7 @@ import br.ufjf.estudante.singletons.SCustom;
 import br.ufjf.estudante.singletons.SFloat;
 import br.ufjf.estudante.singletons.SFunction;
 import br.ufjf.estudante.singletons.SInt;
+import br.ufjf.estudante.singletons.SMulti;
 import br.ufjf.estudante.singletons.SNull;
 import br.ufjf.estudante.singletons.SType;
 import br.ufjf.estudante.util.VisitException;
@@ -80,7 +81,30 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(CommandCall node) {}
+  public void visit(CommandCall call) {
+    SFunction matchFunction = matchFunction(call.getId(), call.getParams(), call.getLine());
+
+    List<String> vars = call.getReturnVars();
+    if (vars != null && !vars.isEmpty()) {
+
+      if (vars.size() > matchFunction.getReturnLen()) {
+        throw new VisitException(
+            "Esperando mais retornos do que sao de fato retornados", call.getLine());
+      }
+
+      for (int i = 0; i < vars.size(); i++) {
+        String id = vars.get(i);
+        SType varType = environment.get(id);
+        SType retType = matchFunction.getReturn(i);
+
+        if (varType != null && !varType.match(retType)) {
+          throw new VisitException(
+              String.format("Não se pode atribuir %s em variável tipo %s", retType, varType),
+              call.getLine());
+        }
+      }
+    }
+  }
 
   @Override
   public void visit(CommandIf node) {}
@@ -168,9 +192,15 @@ public class VisitorTypeCheck implements Visitor {
           function.getParams() == null
               ? null
               : function.getParams().values().stream().map(Type::getSType).toArray(SType[]::new);
+      SType[] retTypes =
+          function.getReturnTypes() == null
+              ? null
+              : function.getReturnTypes().getTypes().stream()
+                  .map(Type::getSType)
+                  .toArray(SType[]::new);
 
       // Crie o tipo Singleton do visitor de type check
-      SFunction newFunction = new SFunction(argTypes);
+      SFunction newFunction = new SFunction(argTypes, retTypes);
 
       // Cheque se a função com o mesmo nome e parâmetros já não foi definida
       Collection<SFunction> definedFunctions = functionMap.get(function.getId());
@@ -211,7 +241,19 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(ExpressionBoolean node) {}
 
   @Override
-  public void visit(ExpressionCall node) {}
+  public void visit(ExpressionCall call) {
+    SFunction match = matchFunction(call.getId(), call.getParams(), call.getLine());
+
+    call.getModifier().accept(this);
+    SType modifier = stack.pop();
+
+    if (!(modifier instanceof SInt)) {
+      throw new VisitException(
+          "Tipo " + modifier + " não pode ser usado para acessar retorno", call.getLine());
+    }
+
+    stack.push(new SMulti(match.getReturnTypes()));
+  }
 
   @Override
   public void visit(Expression node) {}
@@ -375,4 +417,39 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(Type node) {}
+
+  private SFunction matchFunction(String id, ExpressionsList params, int line) {
+    Collection<SFunction> functionCollection = functionMap.get(id);
+
+    if (functionCollection.isEmpty()) {
+      throw new VisitException("Função não definida", line);
+    }
+
+    SType[] callArgs =
+        params == null
+            ? null
+            : params.getExpressions().stream()
+                .map(
+                    expression -> {
+                      expression.accept(this);
+                      return stack.pop();
+                    })
+                .toArray(SType[]::new);
+
+    SFunction callFunction = new SFunction(callArgs);
+
+    SFunction matchFunction = null;
+    for (SFunction defFunction : functionCollection) {
+      if (defFunction.match(callFunction)) {
+        matchFunction = defFunction;
+        break;
+      }
+    }
+
+    if (matchFunction == null) {
+      throw new VisitException("Parametros errados", line);
+    }
+
+    return matchFunction;
+  }
 }

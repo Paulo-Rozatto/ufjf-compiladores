@@ -6,6 +6,7 @@ package lang.ast;
 
 import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
+import br.ufjf.estudante.visitor.VisitorInterpreter;
 
 public class ExpressionArithmetic extends Expression {
   private final String op;
@@ -22,19 +23,21 @@ public class ExpressionArithmetic extends Expression {
   }
 
   public void accept(Visitor v) {
-    Literal leftResult = null, rightResult = null;
-    if (left != null) {
-      left.accept(v);
-      leftResult = left.evaluate();
-    }
+    if (v instanceof VisitorInterpreter) {
+      Literal leftResult = null, rightResult = null;
+      if (left != null) {
+        left.accept(v);
+        leftResult = left.evaluate();
+      }
 
-    if (right != null) {
-      right.accept(v);
-      rightResult = right.evaluate();
-    }
+      if (right != null) {
+        right.accept(v);
+        rightResult = right.evaluate();
+      }
 
-    leftValue = leftResult;
-    rightValue = rightResult;
+      leftValue = leftResult;
+      rightValue = rightResult;
+    }
     v.visit(this);
   }
 
