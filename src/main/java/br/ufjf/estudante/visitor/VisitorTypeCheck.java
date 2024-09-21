@@ -129,7 +129,15 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(CommandIterate node) {}
+  public void visit(CommandIterate iterate) {
+    iterate.getExpression().accept(this);
+
+    if (!stack.pop().match(SInt.newSInt())) {
+      throw new VisitException("Iterate espera um inteiro.", iterate.getLine());
+    }
+
+    iterate.getCommand().accept(this);
+  }
 
   @Override
   public void visit(Command node) {}
@@ -443,6 +451,7 @@ public class VisitorTypeCheck implements Visitor {
     for (Object modifier : lValue.getModifiers()) {
 
       if (modifier instanceof String) {
+        variable = customMap.get(((SCustom) variable).getId());
         variable = ((SCustom) variable).getFieldType((String) modifier);
         if (variable == null) {
           throw new VisitException("Campo '" + modifier + "' inexistente!", lValue.getLine());
