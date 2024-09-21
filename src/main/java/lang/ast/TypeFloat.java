@@ -1,5 +1,6 @@
 package lang.ast;
 
+import br.ufjf.estudante.singletons.SArray;
 import br.ufjf.estudante.singletons.SFloat;
 import br.ufjf.estudante.singletons.SType;
 
@@ -15,6 +16,12 @@ public class TypeFloat extends Type {
 
   @Override
   public SType getSType() {
-    return SFloat.newSFloat();
+    SType type = SFloat.newSFloat();
+
+    for (int i = 1; i < getDimensions(); i++) {
+      type = new SArray(type);
+    }
+
+    return type;
   }
 }

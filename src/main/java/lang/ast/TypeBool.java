@@ -16,13 +16,12 @@ public class TypeBool extends Type {
 
   @Override
   public SType getSType() {
-    if (getDimensions() > 1) {
-      SArray sType = new SArray(SBoolean.newSBoolean());
-      for (int i = 0; i < getDimensions(); i++) {
-        sType = new SArray(sType);
-      }
+    SType type = SBoolean.newSBoolean();
+
+    for (int i = 1; i < getDimensions(); i++) {
+      type = new SArray(type);
     }
 
-    return SBoolean.newSBoolean();
+    return type;
   }
 }

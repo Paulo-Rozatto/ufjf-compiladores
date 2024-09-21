@@ -44,15 +44,12 @@ public class TypeCustom extends Type {
 
   @Override
   public SType getSType() {
-    SCustom custom = new SCustom(id);
+    SType type = new SCustom(id);
 
-    if (getDimensions() > 1) {
-      SArray sType = new SArray(custom);
-      for (int i = 0; i < getDimensions(); i++) {
-        sType = new SArray(sType);
-      }
+    for (int i = 1; i < getDimensions(); i++) {
+      type = new SArray(type);
     }
 
-    return custom;
+    return type;
   }
 }

@@ -22,6 +22,18 @@ public class ExpressionArithmetic extends Expression {
     this.right = right;
   }
 
+  public String getOp() {
+    return op;
+  }
+
+  public Expression getLeft() {
+    return left;
+  }
+
+  public Expression getRight() {
+    return right;
+  }
+
   public void accept(Visitor v) {
     if (v instanceof VisitorInterpreter) {
       Literal leftResult = null, rightResult = null;

@@ -16,13 +16,12 @@ public class TypeChar extends Type {
 
   @Override
   public SType getSType() {
-    if (getDimensions() > 1) {
-      SArray sType = new SArray(SChar.newSChar());
-      for (int i = 0; i < getDimensions(); i++) {
-        sType = new SArray(sType);
-      }
+    SType type = SChar.newSChar();
+
+    for (int i = 1; i < getDimensions(); i++) {
+      type = new SArray(type);
     }
 
-    return SChar.newSChar();
+    return type;
   }
 }

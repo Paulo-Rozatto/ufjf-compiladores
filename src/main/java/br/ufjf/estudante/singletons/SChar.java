@@ -11,6 +11,9 @@ public class SChar extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(SChar.newSChar());
+    }
     return (value instanceof SChar) || (value instanceof SError);
   }
 

@@ -16,4 +16,20 @@ public class SOr extends SType {
     }
     return false;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("OR(");
+
+    for (int i = 0; i < possibleTypes.length; i++) {
+      sb.append(possibleTypes[i].toString());
+      if (i < possibleTypes.length - 1) {
+        sb.append(", ");
+      }
+    }
+
+    sb.append(")");
+    return sb.toString();
+  }
 }
