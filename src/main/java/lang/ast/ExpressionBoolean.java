@@ -47,4 +47,16 @@ public class ExpressionBoolean extends Expression {
   public int getColumn() {
     return -1;
   }
+
+  public String getOp() {
+    return op;
+  }
+
+  public Expression getLeft() {
+    return left;
+  }
+
+  public Expression getRight() {
+    return right;
+  }
 }

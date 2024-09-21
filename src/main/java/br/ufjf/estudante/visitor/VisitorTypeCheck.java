@@ -111,7 +111,7 @@ public class VisitorTypeCheck implements Visitor {
     commandIf.getExpression().accept(this);
     SType expression = stack.pop();
 
-    if (!(expression instanceof SBoolean)) {
+    if (!expression.match(SBoolean.newSBoolean())) {
       throw new VisitException(
           "Condicional espera Bool, recebeu " + expression, commandIf.getLine());
     }
@@ -260,10 +260,67 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(ExpressionArithmetic node) {}
+  public void visit(ExpressionArithmetic expression) {
+    if (Objects.equals(expression.getOp(), "-") && expression.getLeft() == null) {
+      expression.getRight().accept(this);
+      SType right = stack.pop();
+
+      assertNumber(right, expression.getLine());
+      stack.push(right);
+      return;
+    }
+
+    expression.getLeft().accept(this);
+    expression.getRight().accept(this);
+
+    SType right = stack.pop(), left = stack.pop();
+
+    assertNumber(left, expression.getLine());
+    assertNumber(right, expression.getLine());
+
+    if (!left.match(right)) {
+      throw new VisitException(
+          String.format("Não se pode realizar operação aritimética entre %s e %s", left, right),
+          expression.getLine());
+    }
+
+    if (Objects.equals(expression.getOp(), "<")) {
+      stack.push(SBoolean.newSBoolean());
+    } else {
+      stack.push(left);
+    }
+  }
 
   @Override
-  public void visit(ExpressionBoolean node) {}
+  public void visit(ExpressionBoolean expression) {
+    String op = expression.getOp();
+    if (op.equals("!")) {
+      expression.getRight().accept(this);
+      SType right = stack.pop();
+
+      assertBoolean(right, expression.getLine());
+      stack.push(right);
+      return;
+    }
+
+    expression.getLeft().accept(this);
+    expression.getRight().accept(this);
+
+    SType right = stack.pop(), left = stack.pop();
+
+    if (op.equals("&&") || op.equals("||")) {
+      assertBoolean(left, expression.getLine());
+      assertBoolean(right, expression.getLine());
+    }
+
+    if (!left.match(right)) {
+      throw new VisitException(
+          String.format("Não se pode realizar comparação entre %s e %s", left, right),
+          expression.getLine());
+    }
+
+    stack.push(SBoolean.newSBoolean());
+  }
 
   @Override
   public void visit(ExpressionCall call) {
@@ -290,11 +347,6 @@ public class VisitorTypeCheck implements Visitor {
 
     if (type instanceof SCustom) {
       type = customMap.get(((SCustom) type).getId());
-    }
-
-    int dimensions = newExpression.getType().getDimensions();
-    for (int i = 1; i < dimensions; i++) {
-      type = new SArray(type);
     }
 
     if (!(type instanceof SCustom) && !(type instanceof SArray)) {
@@ -481,5 +533,17 @@ public class VisitorTypeCheck implements Visitor {
     }
 
     return matchFunction;
+  }
+
+  private void assertNumber(SType type, int line) {
+    if (!type.match(SInt.newSInt()) && !type.match(SFloat.newSFloat())) {
+      throw new VisitException("Esperava-se algum tipo numérico, obteve-se  " + type, line);
+    }
+  }
+
+  private void assertBoolean(SType type, int line) {
+    if (!type.match(SBoolean.newSBoolean())) {
+      throw new VisitException("Esperava-se booleano, obteve-se " + type, line);
+    }
   }
 }

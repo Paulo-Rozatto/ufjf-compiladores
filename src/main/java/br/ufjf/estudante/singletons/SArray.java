@@ -13,6 +13,10 @@ public class SArray extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(type);
+    }
+
     return (value instanceof SError)
         || (value instanceof SArray) && type.match(((SArray) value).getType());
   }

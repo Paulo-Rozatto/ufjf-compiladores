@@ -11,6 +11,9 @@ public class SFloat extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(SFloat.newSFloat());
+    }
     return (value instanceof SFloat) || (value instanceof SError);
   }
 

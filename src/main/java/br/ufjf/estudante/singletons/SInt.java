@@ -11,6 +11,9 @@ public class SInt extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(SInt.newSInt());
+    }
     return (value instanceof SInt) || (value instanceof SError);
   }
 

@@ -11,6 +11,9 @@ public class SBoolean extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(SBoolean.newSBoolean());
+    }
     return (value instanceof SBoolean) || (value instanceof SError);
   }
 

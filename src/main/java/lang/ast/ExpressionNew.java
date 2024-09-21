@@ -25,6 +25,7 @@ public class ExpressionNew extends Expression {
   public ExpressionNew(Type type, Expression exp, int line) {
     super(line);
     this.type = type;
+    this.type.increaseDimensions();
     this.exp = exp;
   }
 

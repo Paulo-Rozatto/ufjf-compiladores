@@ -34,6 +34,10 @@ public class SCustom extends SType {
 
   @Override
   public boolean match(SType value) {
+    if (value instanceof SOr) {
+      return value.match(this);
+    }
+
     return (value instanceof SError)
         || (value instanceof SCustom) && Objects.equals(((SCustom) value).getId(), this.id);
   }
