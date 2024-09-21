@@ -28,6 +28,10 @@ public class SCustom extends SType {
     this.fields = fields;
   }
 
+  public SType getFieldType(String fieldId) {
+    return fields.get(fieldId);
+  }
+
   @Override
   public boolean match(SType value) {
     return (value instanceof SError)

@@ -18,10 +18,13 @@ public class LValue extends Expression {
   private final List<Object> modifiers = new ArrayList<>();
   private Map<String, Pair<Type, Literal>> env;
   private Visitor v;
-
   public LValue(String id, int line) {
     super(line);
     this.id = id;
+  }
+
+  public List<Object> getModifiers() {
+    return modifiers;
   }
 
   public void addModifier(String id) {
