@@ -98,7 +98,15 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(CommandRead node) {}
 
   @Override
-  public void visit(CommandReturn node) {}
+  public void visit(CommandReturn commandReturn) {
+    List<Expression> returns = commandReturn.getReturns().getExpressions();
+    for (int i = 0; i < returns.size(); i++) {
+      returns.get(i).accept(this);
+      SType value = stack.pop();
+      environment.put(String.valueOf(i), value);
+    }
+    isReturn = true;
+  }
 
   @Override
   public void visit(CommandsList commandsList) {
@@ -296,8 +304,6 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(LValue lValue) {
-    //    SType value = stack.pop();
-
     SType variable = environment.get(lValue.getId());
     if (variable == null) {
       if (!lValue.getModifiers().isEmpty()) {
@@ -305,13 +311,11 @@ public class VisitorTypeCheck implements Visitor {
             "Não se pode realizar acessos em variável não definida!", lValue.getLine());
       }
 
-      //      environment.put(lValue.getId(), value);
       stack.push(SNull.newSNull());
       return;
     }
 
     boolean error = false;
-
     for (Object modifier : lValue.getModifiers()) {
 
       if (modifier instanceof String) {
