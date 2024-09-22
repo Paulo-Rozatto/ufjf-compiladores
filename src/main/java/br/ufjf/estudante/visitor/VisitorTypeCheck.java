@@ -280,7 +280,7 @@ public class VisitorTypeCheck implements Visitor {
       SType right = stack.pop();
 
       assertNumber(right, expression.getLine());
-      stack.push(right);
+      stack.push(SInt.newSInt());
       return;
     }
 
@@ -348,7 +348,23 @@ public class VisitorTypeCheck implements Visitor {
           "Tipo " + modifier + " não pode ser usado para acessar retorno", call.getLine());
     }
 
-    stack.push(new SOr(match.getReturnTypes()));
+    SType[] returns = match.getReturnTypes();
+    Integer index = ((SInt) modifier).getValue();
+
+    if (index == null) {
+      stack.push(new SOr(returns));
+      return;
+    }
+
+    if (index > returns.length - 1) {
+      throw new VisitException(
+          String.format(
+              "Tentando acessar retorno de indice %d em função que retorna apenas %d valores.",
+              index, returns.length),
+          call.getLine());
+    }
+
+    stack.push(returns[index]);
   }
 
   @Override
@@ -431,8 +447,8 @@ public class VisitorTypeCheck implements Visitor {
   }
 
   @Override
-  public void visit(LiteralInt node) {
-    stack.push(SInt.newSInt());
+  public void visit(LiteralInt literal) {
+    stack.push(new SInt(literal.getValue()));
   }
 
   @Override
