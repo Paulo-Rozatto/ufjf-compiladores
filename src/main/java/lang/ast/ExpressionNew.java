@@ -54,7 +54,7 @@ public class ExpressionNew extends Expression {
 
       Object array = Array.newInstance(type.getLiteralClass(), size);
 
-      for (int i = 1; i < type.getDimensions(); i++) {
+      for (int i = 2; i < type.getDimensions(); i++) {
         Object tempArray = Array.newInstance(array.getClass(), size);
         for (int j = 0; j < size; j++) {
           Array.set(tempArray, j, array);
