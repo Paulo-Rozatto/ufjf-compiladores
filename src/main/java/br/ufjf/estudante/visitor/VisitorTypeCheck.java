@@ -68,6 +68,12 @@ public class VisitorTypeCheck implements Visitor {
 
     SType variable = stack.pop(), value = stack.pop();
 
+    if (attribution.getExpression() instanceof LValue && SNull.newSNull().match(value)) {
+      throw new VisitException(
+          "Variável indefinida: " + ((LValue) attribution.getExpression()).getId(),
+          attribution.getLine());
+    }
+
     if (SNull.newSNull().match(variable)) {
       environment.put(attribution.getlValue().getId(), value);
       return;
