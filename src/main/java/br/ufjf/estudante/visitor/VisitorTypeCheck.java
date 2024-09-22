@@ -4,12 +4,14 @@ import br.ufjf.estudante.singletons.SArray;
 import br.ufjf.estudante.singletons.SBoolean;
 import br.ufjf.estudante.singletons.SChar;
 import br.ufjf.estudante.singletons.SCustom;
+import br.ufjf.estudante.singletons.SError;
 import br.ufjf.estudante.singletons.SFloat;
 import br.ufjf.estudante.singletons.SFunction;
 import br.ufjf.estudante.singletons.SInt;
 import br.ufjf.estudante.singletons.SNull;
 import br.ufjf.estudante.singletons.SOr;
 import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.util.Messenger;
 import br.ufjf.estudante.util.VisitException;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -59,7 +61,9 @@ public class VisitorTypeCheck implements Visitor {
   private final Stack<SType> stack = new Stack<>();
   private Map<String, SType> environment;
 
+  private boolean hasError = false;
   private boolean isReturn = false;
+
   private final SType[] primitives = {
     SInt.newSInt(), SFloat.newSFloat(), SChar.newSChar(), SBoolean.newSBoolean()
   };
@@ -73,9 +77,16 @@ public class VisitorTypeCheck implements Visitor {
     SType variable = stack.pop(), value = stack.pop();
 
     if (attribution.getExpression() instanceof LValue && SNull.newSNull().match(value)) {
-      throw new VisitException(
-          "Variável indefinida: " + ((LValue) attribution.getExpression()).getId(),
-          attribution.getLine());
+      error(
+          attribution.getLine(),
+          "Variável '%s' indefinida.",
+          ((LValue) attribution.getExpression()).getId());
+      value = SError.newSError();
+    }
+
+    if (variable instanceof SError) {
+      environment.put(attribution.getlValue().getId(), SError.newSError());
+      return;
     }
 
     if (SNull.newSNull().match(variable)) {
@@ -84,33 +95,45 @@ public class VisitorTypeCheck implements Visitor {
     }
 
     if (!variable.match(value)) {
-      throw new VisitException(
-          String.format("Não se pode atribuir %s em variável do tipo %s.", value, variable),
-          attribution.getLine());
+      error(
+          attribution.getLine(),
+          "Não se pode atribuir %s em variável do tipo %s.",
+          value,
+          variable);
+      environment.put(attribution.getlValue().getId(), SError.newSError());
     }
   }
 
   @Override
   public void visit(CommandCall call) {
-    SFunction matchFunction = matchFunction(call.getId(), call.getParams(), call.getLine());
-
+    SType match = matchFunction(call.getId(), call.getParams(), call.getLine());
     List<String> vars = call.getReturnVars();
-    if (vars != null && !vars.isEmpty()) {
 
-      if (vars.size() > matchFunction.getReturnLen()) {
-        throw new VisitException(
-            "Esperando mais retornos do que sao de fato retornados", call.getLine());
+    if (match instanceof SError) {
+      if (vars != null) {
+        for (String varId : vars) {
+          environment.put(varId, SError.newSError());
+        }
       }
+      return;
+    }
 
+    SFunction matchFunction = (SFunction) match;
+
+    if (vars != null && !vars.isEmpty()) {
       for (int i = 0; i < vars.size(); i++) {
         String id = vars.get(i);
         SType varType = environment.get(id);
         SType retType = matchFunction.getReturn(i);
 
+        if (retType == null) {
+          error(call.getLine(), "Função não tem retorno para o índice %d.", i);
+          retType = SError.newSError();
+        }
+
         if (varType != null && !varType.match(retType)) {
-          throw new VisitException(
-              String.format("Não se pode atribuir %s em variável tipo %s", retType, varType),
-              call.getLine());
+          error(call.getLine(), "Não se pode atribuir %s em variável tipo %s.", retType, varType);
+          retType = SError.newSError();
         }
 
         environment.put(id, retType);
@@ -124,8 +147,7 @@ public class VisitorTypeCheck implements Visitor {
     SType expression = stack.pop();
 
     if (!expression.match(SBoolean.newSBoolean())) {
-      throw new VisitException(
-          "Condicional espera Bool, recebeu " + expression, commandIf.getLine());
+      error(commandIf.getLine(), "Condicional espera Bool, recebeu %s.", expression);
     }
 
     isReturn = false;
@@ -144,8 +166,9 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(CommandIterate iterate) {
     iterate.getExpression().accept(this);
 
-    if (!stack.pop().match(SInt.newSInt())) {
-      throw new VisitException("Iterate espera um inteiro.", iterate.getLine());
+    SType type = stack.pop();
+    if (!type.match(SInt.newSInt())) {
+      error(iterate.getLine(), "Iterate espera Int, recebeu %s.", type);
     }
 
     iterate.getCommand().accept(this);
@@ -160,7 +183,7 @@ public class VisitorTypeCheck implements Visitor {
     SType type = stack.pop();
 
     if (!orPrimitives.match(type)) {
-      throw new VisitException("Print não aceita tipo: " + type, print.getLine());
+      error(print.getLine(), "Print não aceita tipo: ", type);
     }
   }
 
@@ -170,8 +193,12 @@ public class VisitorTypeCheck implements Visitor {
     SType type = stack.pop();
 
     if (!type.match(SNull.newSNull()) && !orPrimitives.match(type)) {
-      throw new VisitException("Não se pode ler tipo " + type, node.getLine());
+      error(node.getLine(), "Não se pode ler tipo %s.", type);
+      stack.push(SError.newSError());
+      return;
     }
+
+    stack.push(orPrimitives);
   }
 
   @Override
@@ -186,9 +213,12 @@ public class VisitorTypeCheck implements Visitor {
       if (envReturn == null) {
         environment.put(position, value);
       } else if (!envReturn.match(value)) {
-        throw new VisitException(
-            String.format("Função não pode retornar %s e %s na mesma posição.", value, envReturn),
-            commandReturn.getLine());
+        error(
+            commandReturn.getLine(),
+            "Função não pode retornar %s e %s na mesma posição.",
+            value,
+            envReturn);
+        environment.put(position, SError.newSError());
       }
     }
     isReturn = true;
@@ -204,6 +234,8 @@ public class VisitorTypeCheck implements Visitor {
   @Override
   public void visit(Data data) {
     if (customMap.get(data.getId()) != null) {
+      // Se o tipo está duplicado, encerra a verificação aqui, pois não tem como inferir qual
+      // deinfição está certa para usar nas próximas inferências
       throw new VisitException("Tipo " + data.getId() + "já declarado!", data.getLine());
     }
 
@@ -267,6 +299,8 @@ public class VisitorTypeCheck implements Visitor {
         definedFunctions.forEach(
             sFunction -> {
               if (sFunction.match(newFunction)) {
+                // Se a função está duplicada, encerra a verificação de tipos, porque pode gerar
+                // ambiguidade na verificação de tipos assim como Datas duplicados
                 throw new VisitException("Função duplicada!", function.getLine());
               }
             });
@@ -280,11 +314,8 @@ public class VisitorTypeCheck implements Visitor {
     Collection<SFunction> mains = functionMap.get("main");
 
     if (mains.isEmpty()) {
+      // Não tem sentido continuar a verificação de um programa sem main
       throw new VisitException("Programa não têm main!", definitions.getLine());
-    }
-
-    if (mains.size() > 1) {
-      throw new VisitException("Mais de uma main declarada!", definitions.getLine());
     }
 
     // Registrados as declarações, visite as funções
@@ -299,7 +330,12 @@ public class VisitorTypeCheck implements Visitor {
       expression.getRight().accept(this);
       SType right = stack.pop();
 
-      assertNumber(right, expression.getLine());
+      if (notNumber(right)) {
+        error(expression.getLine(), "Esperava-se tipo numérico, obteve-se %s.", right);
+        stack.push(SError.newSError());
+        return;
+      }
+
       stack.push(SInt.newSInt());
       return;
     }
@@ -309,21 +345,33 @@ public class VisitorTypeCheck implements Visitor {
 
     SType right = stack.pop(), left = stack.pop();
 
-    if (expression.getOp().equals("%")) {
-      if (!left.match(SInt.newSInt()) || !right.match(SInt.newSInt())) {
-        throw new VisitException(
-            String.format("Esperava-se dois inteiros, obteve-se %s %% %s", left, right),
-            expression.getLine());
-      }
+    if (expression.getOp().equals("%")
+        && !(left.match(SInt.newSInt()) && right.match(SInt.newSInt()))) {
+      error(expression.getLine(), "Esperava-se dois inteiros, obteve-se %s %% %s", left, right);
+      stack.push(SError.newSError());
+      return;
     }
 
-    assertNumber(left, expression.getLine());
-    assertNumber(right, expression.getLine());
+    if (notNumber(left) || notNumber(right)) {
+      error(
+          expression.getLine(),
+          "Esperava-se tipos numéricos para realizar %s %s %s",
+          left,
+          expression.getOp(),
+          right);
+      stack.push(SError.newSError());
+      return;
+    }
 
     if (!left.match(right)) {
-      throw new VisitException(
-          String.format("Não se pode realizar operação aritimética entre %s e %s", left, right),
-          expression.getLine());
+      error(
+          expression.getLine(),
+          "Esperava-se tipos iguais para realizar entre %s %s %s",
+          left,
+          expression.getOp(),
+          right);
+      stack.push(SError.newSError());
+      return;
     }
 
     if (Objects.equals(expression.getOp(), "<")) {
@@ -340,7 +388,12 @@ public class VisitorTypeCheck implements Visitor {
       expression.getRight().accept(this);
       SType right = stack.pop();
 
-      assertBoolean(right, expression.getLine());
+      if (!right.match(SBoolean.newSBoolean())) {
+        error(expression.getLine(), "Não se pode negar tipo %s.", right);
+        stack.push(SError.newSError());
+        return;
+      }
+
       stack.push(right);
       return;
     }
@@ -350,15 +403,18 @@ public class VisitorTypeCheck implements Visitor {
 
     SType right = stack.pop(), left = stack.pop();
 
-    if (op.equals("&&") || op.equals("||")) {
-      assertBoolean(left, expression.getLine());
-      assertBoolean(right, expression.getLine());
+    if (op.equals("&&")
+        || op.equals("||")
+            && (!left.match(SBoolean.newSBoolean()) || !right.match(SBoolean.newSBoolean()))) {
+      error(expression.getLine(), "Esperava-se booleanos para realizar %s %s %s.", left, op, right);
+      stack.push(SError.newSError());
+      return;
     }
 
     if (!left.match(right)) {
-      throw new VisitException(
-          String.format("Não se pode realizar comparação entre %s e %s", left, right),
-          expression.getLine());
+      error(expression.getLine(), "Não se pode realizar comparação entre %s e %s.", left, right);
+      stack.push(SError.newSError());
+      return;
     }
 
     stack.push(SBoolean.newSBoolean());
@@ -366,17 +422,27 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(ExpressionCall call) {
-    SFunction match = matchFunction(call.getId(), call.getParams(), call.getLine());
+    SType match = matchFunction(call.getId(), call.getParams(), call.getLine());
 
+    if (match instanceof SError) {
+      stack.push(match);
+      return;
+    }
+
+    SFunction matchFunction = (SFunction) match;
     call.getModifier().accept(this);
     SType modifier = stack.pop();
 
-    if (!(modifier instanceof SInt)) {
-      throw new VisitException(
-          "Tipo " + modifier + " não pode ser usado para acessar retorno", call.getLine());
+    if (!modifier.match(SInt.newSInt())) {
+      error(call.getLine(), "Tipo %s não pode ser usado para acessar retorno.", modifier);
     }
 
-    SType[] returns = match.getReturnTypes();
+    if (modifier instanceof SError) {
+      stack.push(SError.newSError());
+      return;
+    }
+
+    SType[] returns = matchFunction.getReturnTypes();
     Integer index = ((SInt) modifier).getValue();
 
     if (index == null) {
@@ -385,11 +451,13 @@ public class VisitorTypeCheck implements Visitor {
     }
 
     if (index > returns.length - 1) {
-      throw new VisitException(
-          String.format(
-              "Tentando acessar retorno de indice %d em função que retorna apenas %d valores.",
-              index, returns.length),
-          call.getLine());
+      error(
+          call.getLine(),
+          "Tentando acessar retorno de indice %d em função que retorna apenas %d valores.",
+          index,
+          returns.length);
+      stack.push(SError.newSError());
+      return;
     }
 
     stack.push(returns[index]);
@@ -408,7 +476,9 @@ public class VisitorTypeCheck implements Visitor {
     }
 
     if (!(type instanceof SCustom) && !(type instanceof SArray)) {
-      throw new VisitException("Não se pode instanciar tipo " + type, newExpression.getLine());
+      error(newExpression.getLine(), "Não se pode instanciar tipo %s.", type);
+      stack.push(SError.newSError());
+      return;
     }
 
     stack.push(type);
@@ -420,7 +490,7 @@ public class VisitorTypeCheck implements Visitor {
   @Override
   public void visit(Function function) {
     if (Objects.equals(function.getId(), "main") && function.getParams() != null) {
-      throw new VisitException("Main não aceita argumentos!", function.getLine());
+      error(function.getLine(), "Main não aceita argumentos!");
     }
 
     Map<String, SType> env = new HashMap<>();
@@ -436,7 +506,8 @@ public class VisitorTypeCheck implements Visitor {
 
     if (function.getReturnTypes() != null) {
       if (!isReturn) {
-        throw new VisitException("Faltando retorno!", function.getLine());
+        error(function.getLine(), "Faltando retorno!");
+        return;
       }
 
       List<Type> typeList = function.getReturnTypes().getTypes();
@@ -446,14 +517,17 @@ public class VisitorTypeCheck implements Visitor {
         returnType = env.get(String.valueOf(i));
 
         if (returnType == null) {
-          throw new VisitException("Faltando " + (i + 1) + "º retorno.", function.getLine());
+          error(function.getLine(), "Faltando %dº retorno.", (i + 1));
+          continue;
         }
 
         SType expectedType = typeList.get(i).getSType();
         if (!returnType.match(expectedType)) {
-          throw new VisitException(
-              String.format("Esperava retorno tipo %s, obtido tipo %s", expectedType, returnType),
-              function.getLine());
+          error(
+              function.getLine(),
+              "Esperava retorno tipo %s, obtido tipo %s",
+              expectedType,
+              returnType);
         }
       }
     }
@@ -489,54 +563,73 @@ public class VisitorTypeCheck implements Visitor {
     SType variable = environment.get(lValue.getId());
     if (variable == null) {
       if (!lValue.getModifiers().isEmpty()) {
-        throw new VisitException(
-            "Não se pode realizar acessos em variável não definida!", lValue.getLine());
+        error(lValue.getLine(), "Não se pode realizar acessos em variável não definida!");
+        stack.push(SError.newSError());
+        return;
       }
 
       stack.push(SNull.newSNull());
       return;
     }
 
+    if (variable instanceof SError) {
+      stack.push(variable);
+      return;
+    }
+
     boolean error = false;
+    // Acesso de campos e arrays no mesmo for loop
     for (Object modifier : lValue.getModifiers()) {
 
+      // Se tiver acessando como string, assume ser tipo custom.
       if (modifier instanceof String) {
-        variable = customMap.get(((SCustom) variable).getId());
-        variable = ((SCustom) variable).getFieldType((String) modifier);
-        if (variable == null) {
-          throw new VisitException("Campo '" + modifier + "' inexistente!", lValue.getLine());
-        }
-        continue;
-      }
-
-      if (modifier instanceof Expression) {
-        ((Expression) modifier).accept(this);
-        SType expressionValue = stack.pop();
-
-        if (!(expressionValue instanceof SInt)) {
+        // Se não for tipo custom, então erro.
+        if (!(variable instanceof SCustom)) {
+          error(lValue.getLine(), "Tipo %s não tem campos.", variable);
           error = true;
           break;
         }
 
-        variable = ((SArray) variable).getType();
+        // Faz o casting da variável para custom e pega sua definição registrada
+        variable = customMap.get(((SCustom) variable).getId());
+
+        // Atualiza a variável com o acesso do campo
+        variable = ((SCustom) variable).getFieldType((String) modifier);
+
+        // Se a variável estiver vazia é porque o campo é inexistente
+        if (variable == null) {
+          error(lValue.getLine(), "Campo '%s' inexistente.", modifier);
+          error = true;
+          break;
+        }
+
+        // Se não houve erro, pode passar para a próxima iteração do laço
         continue;
       }
 
+      // Se é expressão, pega o resultado dela como modifier.
+      if (modifier instanceof Expression) {
+        ((Expression) modifier).accept(this);
+        modifier = stack.pop();
+      }
+
+      // Se chegou aqui, o acesso é de array, logo o acesso tem que ser inteiro.
       if (modifier instanceof SInt) {
         variable = ((SArray) variable).getType();
         continue;
       }
 
+      // Se chegou aqui, é erro de acesso de array.
+      error(lValue.getLine(), "Esperava-se Int para acessar array, obtido %s.", modifier);
       error = true;
       break;
     }
 
-    // Se houve erro
     if (error) {
-      throw new VisitException("Acesso inválido!", lValue.getLine());
+      stack.push(SError.newSError());
+    } else {
+      stack.push(variable);
     }
-
-    stack.push(variable);
   }
 
   @Override
@@ -548,6 +641,9 @@ public class VisitorTypeCheck implements Visitor {
   @Override
   public void visit(Program program) {
     program.getDefList().accept(this);
+    if (hasError) {
+      throw new VisitException("Erros detectados!", 0);
+    }
   }
 
   @Override
@@ -559,11 +655,12 @@ public class VisitorTypeCheck implements Visitor {
   @Override
   public void visit(Type node) {}
 
-  private SFunction matchFunction(String id, ExpressionsList params, int line) {
+  private SType matchFunction(String id, ExpressionsList params, int line) {
     Collection<SFunction> functionCollection = functionMap.get(id);
 
     if (functionCollection.isEmpty()) {
-      throw new VisitException("Função não definida", line);
+      error(line, "Função não definida.");
+      return SError.newSError();
     }
 
     SType[] callArgs =
@@ -588,21 +685,19 @@ public class VisitorTypeCheck implements Visitor {
     }
 
     if (matchFunction == null) {
-      throw new VisitException("Parametros errados", line);
+      error(line, "Função não definida para esses parâmetros.");
+      return SError.newSError();
     }
 
     return matchFunction;
   }
 
-  private void assertNumber(SType type, int line) {
-    if (!type.match(SInt.newSInt()) && !type.match(SFloat.newSFloat())) {
-      throw new VisitException("Esperava-se algum tipo numérico, obteve-se  " + type, line);
-    }
+  private boolean notNumber(SType type) {
+    return !type.match(SInt.newSInt()) && !type.match(SFloat.newSFloat());
   }
 
-  private void assertBoolean(SType type, int line) {
-    if (!type.match(SBoolean.newSBoolean())) {
-      throw new VisitException("Esperava-se booleano, obteve-se " + type, line);
-    }
+  private void error(int line, String message, Object... args) {
+    Messenger.error(String.format(message, args), line);
+    hasError = true;
   }
 }
