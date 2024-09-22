@@ -309,6 +309,14 @@ public class VisitorTypeCheck implements Visitor {
 
     SType right = stack.pop(), left = stack.pop();
 
+    if (expression.getOp().equals("%")) {
+      if (!left.match(SInt.newSInt()) || !right.match(SInt.newSInt())) {
+        throw new VisitException(
+            String.format("Esperava-se dois inteiros, obteve-se %s %% %s", left, right),
+            expression.getLine());
+      }
+    }
+
     assertNumber(left, expression.getLine());
     assertNumber(right, expression.getLine());
 
