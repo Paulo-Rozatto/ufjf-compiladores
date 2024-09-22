@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SOr extends SType {
   private final SType[] possibleTypes;

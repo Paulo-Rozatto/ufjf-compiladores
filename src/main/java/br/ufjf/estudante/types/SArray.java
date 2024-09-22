@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SArray extends SType {
   private final SType type;

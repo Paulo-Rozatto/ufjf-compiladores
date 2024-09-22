@@ -1,8 +1,8 @@
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SArray;
-import br.ufjf.estudante.singletons.SBoolean;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SArray;
+import br.ufjf.estudante.types.SBoolean;
+import br.ufjf.estudante.types.SType;
 
 public class TypeBool extends Type {
   public TypeBool(int line) {

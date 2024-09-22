@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SInt extends SType {
   private static final SInt sInt = new SInt();

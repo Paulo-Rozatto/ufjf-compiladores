@@ -6,7 +6,7 @@ import lang.ast.*;
 import lang.parser.ParseAdaptor;
 import java.util.ArrayList;
 import java.util.List;
-import br.ufjf.estudante.singletons.*;
+import br.ufjf.estudante.types.*;
 
 parser code{:
     public boolean syntaxErrors;

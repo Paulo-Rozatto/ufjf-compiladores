@@ -4,9 +4,9 @@
 */
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SArray;
-import br.ufjf.estudante.singletons.SCustom;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SArray;
+import br.ufjf.estudante.types.SCustom;
+import br.ufjf.estudante.types.SType;
 import br.ufjf.estudante.visitor.Visitor;
 import java.util.HashMap;
 import java.util.Map;

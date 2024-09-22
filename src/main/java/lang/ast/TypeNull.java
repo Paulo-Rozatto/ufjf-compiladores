@@ -1,7 +1,7 @@
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SNull;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SNull;
+import br.ufjf.estudante.types.SType;
 
 public class TypeNull extends Type {
   public TypeNull(int line) {

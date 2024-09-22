@@ -1,8 +1,8 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SFunction extends SType {
   private final SType[] argTypes;
-  private final SType[] returnTypes; // todo: remover se nao usar depois
+  private final SType[] returnTypes;
 
   public SFunction(SType[] argTypes, SType[] returnTypes) {
     this.argTypes = argTypes;

@@ -1,8 +1,8 @@
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SArray;
-import br.ufjf.estudante.singletons.SFloat;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SArray;
+import br.ufjf.estudante.types.SFloat;
+import br.ufjf.estudante.types.SType;
 
 public class TypeFloat extends Type {
   public TypeFloat(int line) {

@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SFloat extends SType {
   private static final SFloat sFloat = new SFloat();

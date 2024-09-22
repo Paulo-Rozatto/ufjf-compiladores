@@ -1,16 +1,16 @@
 package br.ufjf.estudante.visitor;
 
-import br.ufjf.estudante.singletons.SArray;
-import br.ufjf.estudante.singletons.SBoolean;
-import br.ufjf.estudante.singletons.SChar;
-import br.ufjf.estudante.singletons.SCustom;
-import br.ufjf.estudante.singletons.SError;
-import br.ufjf.estudante.singletons.SFloat;
-import br.ufjf.estudante.singletons.SFunction;
-import br.ufjf.estudante.singletons.SInt;
-import br.ufjf.estudante.singletons.SNull;
-import br.ufjf.estudante.singletons.SOr;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SArray;
+import br.ufjf.estudante.types.SBoolean;
+import br.ufjf.estudante.types.SChar;
+import br.ufjf.estudante.types.SCustom;
+import br.ufjf.estudante.types.SError;
+import br.ufjf.estudante.types.SFloat;
+import br.ufjf.estudante.types.SFunction;
+import br.ufjf.estudante.types.SInt;
+import br.ufjf.estudante.types.SNull;
+import br.ufjf.estudante.types.SOr;
+import br.ufjf.estudante.types.SType;
 import br.ufjf.estudante.util.Messenger;
 import br.ufjf.estudante.util.VisitException;
 import com.google.common.collect.ArrayListMultimap;
@@ -239,9 +239,6 @@ public class VisitorTypeCheck implements Visitor {
       throw new VisitException("Tipo " + data.getId() + "já declarado!", data.getLine());
     }
 
-    // todo: aqui deveria checar se campos são duplicados, mas como estamos usando HashMap campos
-    // duplicados são sobreescritos
-
     Map<String, SType> fields = new HashMap<>();
     data.getDeclarations()
         .forEach(
@@ -468,7 +465,6 @@ public class VisitorTypeCheck implements Visitor {
 
   @Override
   public void visit(ExpressionNew newExpression) {
-    // todo: checar index out of bounds?
     SType type = newExpression.getType().getSType();
 
     if (type instanceof SCustom) {
