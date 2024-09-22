@@ -5,7 +5,7 @@ public class SError extends SType {
 
   private SError() {}
 
-  public SError newSError() {
+  public static SType newSError() {
     return sError;
   }
 

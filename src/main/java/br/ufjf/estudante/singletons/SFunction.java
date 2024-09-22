@@ -27,7 +27,7 @@ public class SFunction extends SType {
   }
 
   public SType getReturn(int i) {
-    return returnTypes == null ? SNull.newSNull() : returnTypes[i];
+    return returnTypes == null || i > (returnTypes.length - 1) ? null : returnTypes[i];
   }
 
   public int getReturnLen() {
@@ -37,6 +37,15 @@ public class SFunction extends SType {
   @Override
   public boolean match(SType value) {
     if (!(value instanceof SFunction func)) {
+      return false;
+    }
+
+    if (this.argTypes == null && func.getArgTypes() == null) {
+      return true;
+    }
+
+    if (this.argTypes == null && func.getArgTypes() != null
+        || this.argTypes != null && func.getArgTypes() == null) {
       return false;
     }
 
