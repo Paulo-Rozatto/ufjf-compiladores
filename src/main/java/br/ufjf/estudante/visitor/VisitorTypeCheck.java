@@ -236,7 +236,7 @@ public class VisitorTypeCheck implements Visitor {
     if (customMap.get(data.getId()) != null) {
       // Se o tipo está duplicado, encerra a verificação aqui, pois não tem como inferir qual
       // deinfição está certa para usar nas próximas inferências
-      throw new VisitException("Tipo " + data.getId() + "já declarado!", data.getLine());
+      throw new VisitException("Tipo " + data.getId() + " já declarado!", data.getLine());
     }
 
     Map<String, SType> fields = new HashMap<>();
@@ -638,7 +638,8 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Program program) {
     program.getDefList().accept(this);
     if (hasError) {
-      throw new VisitException("Erros detectados!", 0);
+      // Lança exeção, mas não mostra mensagem, pois mensagens já foram logadas.
+      throw new VisitException();
     }
   }
 

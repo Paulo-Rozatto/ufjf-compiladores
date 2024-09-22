@@ -9,6 +9,9 @@ public class Messenger {
   private Messenger() {}
 
   public static void error(String message, int line) {
+    if (line < 0) {
+      return;
+    }
     logger.log(Level.SEVERE, "Erro na linha {0} -> {1}", new Object[] {line, message});
   }
 }
