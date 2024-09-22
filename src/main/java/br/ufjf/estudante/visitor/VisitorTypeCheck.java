@@ -60,6 +60,10 @@ public class VisitorTypeCheck implements Visitor {
   private Map<String, SType> environment;
 
   private boolean isReturn = false;
+  private final SType[] primitives = {
+    SInt.newSInt(), SFloat.newSFloat(), SChar.newSChar(), SBoolean.newSBoolean()
+  };
+  private final SType orPrimitives = new SOr(primitives);
 
   @Override
   public void visit(CommandAttribution attribution) {
@@ -108,6 +112,8 @@ public class VisitorTypeCheck implements Visitor {
               String.format("Não se pode atribuir %s em variável tipo %s", retType, varType),
               call.getLine());
         }
+
+        environment.put(id, retType);
       }
     }
   }
@@ -149,10 +155,24 @@ public class VisitorTypeCheck implements Visitor {
   public void visit(Command node) {}
 
   @Override
-  public void visit(CommandPrint node) {}
+  public void visit(CommandPrint print) {
+    print.getExpression().accept(this);
+    SType type = stack.pop();
+
+    if (!orPrimitives.match(type)) {
+      throw new VisitException("Print não aceita tipo: " + type, print.getLine());
+    }
+  }
 
   @Override
-  public void visit(CommandRead node) {}
+  public void visit(CommandRead node) {
+    node.getLValue().accept(this);
+    SType type = stack.pop();
+
+    if (!type.match(SNull.newSNull()) && !orPrimitives.match(type)) {
+      throw new VisitException("Não se pode ler tipo " + type, node.getLine());
+    }
+  }
 
   @Override
   public void visit(CommandReturn commandReturn) {
