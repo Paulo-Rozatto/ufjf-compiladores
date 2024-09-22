@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 import java.util.Map;
 import java.util.Objects;
@@ -9,11 +9,6 @@ public class SCustom extends SType {
 
   public SCustom(String id) {
     this.id = id;
-  }
-
-  public SCustom(String id, Map<String, SType> fields) {
-    this.id = id;
-    this.fields = fields;
   }
 
   public String getId() {

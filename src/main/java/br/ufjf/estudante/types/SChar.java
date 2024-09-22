@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SChar extends SType {
   private static final SChar sChar = new SChar();

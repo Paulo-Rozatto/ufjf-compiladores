@@ -1,4 +1,4 @@
-package br.ufjf.estudante.singletons;
+package br.ufjf.estudante.types;
 
 public class SError extends SType {
   private static final SError sError = new SError();

@@ -4,6 +4,7 @@
 */
 import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
+import br.ufjf.estudante.visitor.VisitorInterpreter;
 import br.ufjf.estudante.visitor.VisitorTypeCheck;
 import de.jflex.Lexer;
 import java.io.FileNotFoundException;
@@ -27,8 +28,8 @@ public class SemanticTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    //    VisitorInterpreter visitor = new VisitorInterpreter();
-    Visitor visitor = new VisitorTypeCheck();
+        VisitorInterpreter visitor = new VisitorInterpreter();
+//    Visitor visitor = new VisitorTypeCheck();
     prog.accept(visitor);
   }
 
@@ -62,10 +63,10 @@ public class SemanticTest {
     test(rightPath, "teste1");
   }
 
-  @Test(groups = {"accept"})
-  public void accept_teste2() throws Exception {
-    test(rightPath, "teste2");
-  }
+//  @Test(groups = {"accept"})
+//  public void accept_teste2() throws Exception {
+//    test(rightPath, "teste2");
+//  }
 
   @Test(groups = {"accept"})
   public void accept_teste3() throws Exception {

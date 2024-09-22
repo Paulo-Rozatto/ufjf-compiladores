@@ -4,7 +4,7 @@
 */
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SType;
 import br.ufjf.estudante.visitor.Visitor;
 
 public abstract class Type extends Node {

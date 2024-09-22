@@ -1,8 +1,8 @@
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SArray;
-import br.ufjf.estudante.singletons.SChar;
-import br.ufjf.estudante.singletons.SType;
+import br.ufjf.estudante.types.SArray;
+import br.ufjf.estudante.types.SChar;
+import br.ufjf.estudante.types.SType;
 
 public class TypeChar extends Type {
   public TypeChar(int line) {

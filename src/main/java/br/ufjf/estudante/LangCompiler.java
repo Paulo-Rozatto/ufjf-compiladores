@@ -1,6 +1,7 @@
 package br.ufjf.estudante;
 
 import br.ufjf.estudante.visitor.VisitorInterpreter;
+import br.ufjf.estudante.visitor.VisitorTypeCheck;
 import lang.ast.Program;
 import lang.ast.SuperNode;
 import lang.parser.ParseAdaptor;
@@ -66,8 +67,13 @@ public class LangCompiler {
         // iv = new InteractiveInterpreterVisitor();
         // result.accept(iv);
       } else if (args[0].equals("-tp")) {
-        // iv = new TypeChecker();
-        // result.accept(iv);
+        VisitorTypeCheck typeCheck = new VisitorTypeCheck();
+        try {
+          Program prog = (Program) (result);
+          prog.accept(typeCheck);
+        } catch (Exception e) {
+          System.out.println(e.getMessage());
+        }
       } else if (args[0].equals("-pp")) {
         // iv = new PPrint();
         // result.accept(iv);

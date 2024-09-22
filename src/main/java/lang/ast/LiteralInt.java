@@ -4,7 +4,7 @@
 */
 package lang.ast;
 
-import br.ufjf.estudante.singletons.SInt;
+import br.ufjf.estudante.types.SInt;
 import br.ufjf.estudante.util.VisitException;
 import br.ufjf.estudante.visitor.Visitor;
 
