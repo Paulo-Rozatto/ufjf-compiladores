@@ -1,6 +1,8 @@
 package br.ufjf.estudante;
 
+import br.ufjf.estudante.util.Messenger;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
+import br.ufjf.estudante.visitor.VisitorJavaScript;
 import br.ufjf.estudante.visitor.VisitorTypeCheck;
 import lang.ast.Program;
 import lang.ast.SuperNode;
@@ -78,7 +80,16 @@ public class LangCompiler {
         // iv = new PPrint();
         // result.accept(iv);
         // ((PPrint)iv).print();
+      } else if (args[0].equals("-js")) {
+        VisitorJavaScript visitorJs = new VisitorJavaScript();
+        try {
+          Program prog = (Program) (result);
+          prog.accept(visitorJs);
+        } catch (Exception e) {
+          Messenger.error(e.getMessage(), 0);
+        }
       }
+
     } catch (Exception e) {
       e.printStackTrace();
     }
