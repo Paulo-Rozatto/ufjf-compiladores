@@ -61,10 +61,10 @@ public class JavaScriptTest {
     test(rightPath, "teste1");
   }
 
-  //  @Test(groups = {"accept"})
-  //  public void accept_teste2() throws Exception {
-  //    test(rightPath, "teste2");
-  //  }
+    @Test(groups = {"accept"})
+    public void accept_teste2() throws Exception {
+      test(rightPath, "teste2");
+    }
 
   @Test(groups = {"accept"})
   public void accept_teste3() throws Exception {

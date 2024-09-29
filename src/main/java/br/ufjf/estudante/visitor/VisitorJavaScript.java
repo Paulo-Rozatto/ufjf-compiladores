@@ -1,5 +1,6 @@
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.util.JSCode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,9 +41,12 @@ import lang.ast.TypeCustom;
 public class VisitorJavaScript implements Visitor {
   private final Stack<String> stack = new Stack<>();
   private final StringBuilder code = new StringBuilder();
-  private int indentLevel = 0;
   private Set<String> declaredVars;
+
+  private int indentLevel = 0;
+  private boolean hasRead = false;
   private boolean hasDiv = false;
+  private boolean isAsync = false;
 
   @Override
   public void visit(CommandAttribution attribution) {
@@ -140,7 +144,21 @@ public class VisitorJavaScript implements Visitor {
 
   @Override
   public void visit(CommandRead node) {
-    // todo: usar node read line provavelmente
+    hasRead = isAsync = true;
+    StringBuilder builder = new StringBuilder();
+    String varId = node.getLValue().getId();
+
+    node.getLValue().accept(this);
+    String variable = stack.pop();
+
+    if (declaredVars != null && !declaredVars.contains(varId)) {
+      declaredVars.add(varId);
+      builder.append("var ");
+    }
+
+    builder.append(variable).append(" = ").append("await _read();");
+
+    stack.push(builder.toString());
   }
 
   @Override
@@ -336,10 +354,15 @@ public class VisitorJavaScript implements Visitor {
         declaredVars.add(params.get(i));
       }
     }
-
     builder.append(") ");
+
+    isAsync = false;
     function.getCommandsList().accept(this);
     builder.append(stack.pop());
+
+    if (isAsync) {
+      builder.insert(0, "async ");
+    }
 
     stack.push(builder.toString());
   }
@@ -414,12 +437,12 @@ public class VisitorJavaScript implements Visitor {
 
     program.getDefList().accept(this);
 
+    if (hasRead) {
+      code.append(JSCode._read);
+    }
+
     if (hasDiv) {
-      String div =
-          "function _div(a, b) {\n"
-              + "  return Number.isInteger(a) ? Math.floor(a / b) : a / b;\n"
-              + "}\n\n";
-      code.append(div);
+      code.append(JSCode._div);
     }
 
     code.append(stack.pop());
