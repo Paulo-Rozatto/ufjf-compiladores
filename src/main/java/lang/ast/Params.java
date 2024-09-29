@@ -5,11 +5,11 @@
 package lang.ast;
 
 import br.ufjf.estudante.visitor.Visitor;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Params extends Node {
-  private final Map<String, Type> params = new HashMap<>();
+  private final Map<String, Type> params = new LinkedHashMap<>();
 
   public Params(int line) {
     super(line);
