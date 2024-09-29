@@ -1,6 +1,8 @@
 package br.ufjf.estudante.visitor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import lang.ast.Command;
 import lang.ast.CommandAttribution;
@@ -37,17 +39,29 @@ import lang.ast.TypeCustom;
 
 public class VisitorJavaScript implements Visitor {
   private final Stack<String> stack = new Stack<>();
-  private StringBuilder code = new StringBuilder();
-  private int identLevel = 0;
+  private final StringBuilder code = new StringBuilder();
+  private int indentLevel = 0;
+  private Set<String> declaredVars;
+  private boolean hasDiv = false;
 
   @Override
   public void visit(CommandAttribution attribution) {
+    StringBuilder builder = new StringBuilder();
+    String varId = attribution.getlValue().getId();
+
     attribution.getExpression().accept(this);
     attribution.getlValue().accept(this);
 
     String variable = stack.pop(), value = stack.pop();
-    String attr = String.format("var %s = %s;", variable, value);
-    stack.push(attr);
+
+    if (declaredVars != null && !declaredVars.contains(varId)) {
+      declaredVars.add(varId);
+      builder.append("var ");
+    }
+
+    builder.append(variable).append(" = ").append(value).append(";");
+
+    stack.push(builder.toString());
   }
 
   @Override
@@ -151,17 +165,17 @@ public class VisitorJavaScript implements Visitor {
   @Override
   public void visit(CommandsList commandsList) {
     StringBuilder builder = new StringBuilder("{\n");
-    identLevel += 1;
+    indentLevel += 1;
 
     for (Command command : commandsList.getCommands()) {
       command.accept(this);
-      builder.append("  ".repeat(identLevel));
+      builder.append("  ".repeat(indentLevel));
       builder.append(stack.pop()).append("\n");
     }
 
-    identLevel -= 1;
-    builder.append("  ".repeat(identLevel));
-    builder.append("};");
+    indentLevel -= 1;
+    builder.append("  ".repeat(indentLevel));
+    builder.append("}");
 
     stack.push(builder.toString());
   }
@@ -180,15 +194,15 @@ public class VisitorJavaScript implements Visitor {
 
     builder.append(") {\n");
 
-    builder.append("this.").append(keys.get(0)).append(" = ");
+    builder.append("  this.").append(keys.get(0)).append(" = ");
     builder.append((keys.get(0))).append(";");
 
     for (int i = 1; i < keys.size(); i++) {
       builder.append("\n");
-      builder.append("this.").append(keys.get(i)).append(" = ");
+      builder.append("  this.").append(keys.get(i)).append(" = ");
       builder.append((keys.get(i))).append(";");
     }
-    builder.append("}");
+    builder.append("\n}");
 
     stack.push(builder.toString());
   }
@@ -217,9 +231,17 @@ public class VisitorJavaScript implements Visitor {
 
   @Override
   public void visit(ExpressionArithmetic expression) {
-    // todo: talvez tenha que guardar tipo, divisao inteira ou fazer parse int mesmo e dane-se
-    Expression left = expression.getLeft();
     StringBuilder builder = new StringBuilder();
+    Expression left = expression.getLeft();
+
+    if (expression.getOp().equals("/")) {
+      hasDiv = true;
+      expression.getRight().accept(this);
+      left.accept(this);
+      builder.append("_div(").append(stack.pop()).append(", ").append(stack.pop()).append(")");
+      stack.push(builder.toString());
+      return;
+    }
 
     if (left != null) {
       left.accept(this);
@@ -276,9 +298,23 @@ public class VisitorJavaScript implements Visitor {
   public void visit(Expression node) {}
 
   @Override
-  public void visit(ExpressionNew node) {
-    // todo: todo
-    stack.push("'foo'");
+  public void visit(ExpressionNew expressionNew) {
+    StringBuilder builder = new StringBuilder();
+
+    if (expressionNew.getExp() == null) {
+      String customType = ((TypeCustom) expressionNew.getType()).getId();
+      builder.append("new ").append(customType).append("()");
+    } else {
+      expressionNew.getExp().accept(this);
+      String size = stack.pop();
+
+      int dimensions = expressionNew.getType().getDimensions();
+      builder.append("new Array(".repeat(dimensions - 1));
+      builder.append(size);
+      builder.append(")".repeat(dimensions - 1));
+    }
+
+    stack.push(builder.toString());
   }
 
   @Override
@@ -288,13 +324,16 @@ public class VisitorJavaScript implements Visitor {
   public void visit(Function function) {
     StringBuilder builder = new StringBuilder("function ");
     builder.append(function.getId()).append("(");
+    declaredVars = new HashSet<>();
 
     if (function.getParams() != null && !function.getParams().isEmpty()) {
       List<String> params = function.getParams().keySet().stream().toList();
       builder.append(params.get(0));
+      declaredVars.add(params.get(0));
 
       for (int i = 1; i < params.size(); i++) {
         builder.append(", ").append(params.get(i));
+        declaredVars.add(params.get(i));
       }
     }
 
@@ -312,7 +351,17 @@ public class VisitorJavaScript implements Visitor {
 
   @Override
   public void visit(LiteralChar node) {
-    stack.push("`" + node.getValue() + "`");
+    String escaped =
+        node.getValue()
+            .replace("\\", "\\\\")
+            .replace("\t", "\\t")
+            .replace("\b", "\\b")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\f", "\\f")
+            .replace("'", "\\'")
+            .replace("\"", "\\\"");
+    stack.push("'" + escaped + "'");
   }
 
   @Override
@@ -331,8 +380,21 @@ public class VisitorJavaScript implements Visitor {
   }
 
   @Override
-  public void visit(LValue node) {
-    stack.push(node.getId());
+  public void visit(LValue lValue) {
+    StringBuilder builder = new StringBuilder(lValue.getId());
+
+    if (!lValue.getModifiers().isEmpty()) {
+      for (Object modifier : lValue.getModifiers()) {
+        if (modifier instanceof String) {
+          builder.append(".").append(modifier);
+        } else {
+          ((Node) modifier).accept(this);
+          builder.append("[").append(stack.pop()).append("]");
+        }
+      }
+    }
+
+    stack.push(builder.toString());
   }
 
   @Override
@@ -347,10 +409,21 @@ public class VisitorJavaScript implements Visitor {
 
   @Override
   public void visit(Program program) {
-    identLevel = 0;
+    indentLevel = 0;
+    hasDiv = false;
+
     program.getDefList().accept(this);
+
+    if (hasDiv) {
+      String div =
+          "function _div(a, b) {\n"
+              + "  return Number.isInteger(a) ? Math.floor(a / b) : a / b;\n"
+              + "}\n\n";
+      code.append(div);
+    }
+
     code.append(stack.pop());
-    code.append("\n").append("main();");
+    code.append("main();").append("\n");
   }
 
   @Override
