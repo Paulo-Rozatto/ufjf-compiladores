@@ -1,7 +1,10 @@
 package br.ufjf.estudante.visitor;
 
+import br.ufjf.estudante.util.JasmimCode;
+import br.ufjf.estudante.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 import lang.ast.Command;
@@ -44,9 +47,15 @@ import lang.ast.TypeInt;
 
 public class VisitorJasmim implements Visitor {
   private final Stack<String> stack = new Stack<>();
-  StringBuilder code = new StringBuilder();
-
+  private final StringBuilder code = new StringBuilder();
+  private Stack<String> typeStack;
+  private List<Pair<String, String>> vars; // id, type
   private int indentLevel;
+  private int limitStack = 0, limitLocals = 0;
+
+  public String getCode() {
+    return code.toString();
+  }
 
   private static String jasminType(Type type) {
     StringBuilder builder = new StringBuilder();
@@ -80,7 +89,10 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(Program program) {
-    indentLevel = 0;
+    //    indentLevel = 0;
+    code.append(".class public Main\n").append(".super java/lang/Object\n\n");
+
+    code.append(JasmimCode.default_init).append("\n");
 
     program.getDefList().accept(this);
 
@@ -107,29 +119,98 @@ public class VisitorJasmim implements Visitor {
   public void visit(Data data) {
     StringBuilder builder = new StringBuilder(".class public ");
     builder.append(data.getId()).append("\n").append(".super java/lang/Object").append("\n\n");
-    List<Map.Entry<String, Type>> arrays = new ArrayList<>();
+    //    List<Map.Entry<String, Type>> arrays = new ArrayList<>();
 
     for (Map.Entry<String, Type> entry : data.getDeclarations().entrySet()) {
       String id = entry.getKey();
       Type type = entry.getValue();
       builder.append(".field public ").append(id).append(jasminType(type)).append("\n");
 
-      if (type.getDimensions() > 1) {
-        arrays.add(entry);
-      }
+      //      if (type.getDimensions() > 1) {
+      //        arrays.add(entry);
+      //      }
     }
+    builder.append("\n").append(JasmimCode.default_init);
 
-    builder.append("\n").append(".method public <init>()V").append("\n");
-    // todo: inicializar classe e instaciar os arrays aqui
+    // Arrays precisam ser inicializados, mas nao eh aqui
+    //    builder.append("\n").append(".method public <init>()V").append("\n");
+    //    for(Map.Entry<String, Type> entry : arrays) {
+    //      String id = entry.getKey();
+    //      Type type = entry.getValue();
+    ////      int size =
+    //
+    //    }
 
     stack.push(builder.toString());
   }
 
   @Override
-  public void visit(Function node) {}
+  public void visit(Function function) {
+    StringBuilder builder = new StringBuilder(".method public static ");
+    builder.append(function.getId()).append("(");
+
+    limitStack = 0;
+    limitLocals = 0;
+
+    vars = new ArrayList<>();
+    typeStack = new Stack<>();
+
+    if (function.getParams() != null) {
+      for (Map.Entry<String, Type> entry : function.getParams().entrySet()) {
+        builder.append(jasminType(entry.getValue()));
+        vars.add(new Pair<>(entry.getKey(), jasminType(entry.getValue())));
+      }
+
+      limitStack = limitLocals = function.getParams().size();
+    }
+
+    builder.append(")V\n");
+
+    indentLevel = 0;
+    function.getCommandsList().accept(this);
+
+    builder.append("  .limit stack ").append(limitStack).append("\n");
+    builder.append("  .limit locals ").append(limitLocals).append("\n");
+    builder.append(stack.pop());
+
+    builder.append("\n").append("  return").append("\n");
+    builder.append(".end method");
+
+    stack.push(builder.toString());
+  }
 
   @Override
-  public void visit(CommandAttribution node) {}
+  public void visit(CommandsList commandsList) {
+    StringBuilder builder = new StringBuilder("\n");
+    //    indentLevel += 1;
+    indentLevel = 0;
+
+    for (Command command : commandsList.getCommands()) {
+      command.accept(this);
+      builder.append("  ".repeat(indentLevel));
+      builder.append(stack.pop()).append("\n");
+    }
+
+    //    indentLevel -= 1;
+    stack.push(builder.toString());
+  }
+
+  @Override
+  public void visit(CommandAttribution attribution) {
+    StringBuilder builder = new StringBuilder();
+    String varId = attribution.getlValue().getId();
+
+    attribution.getExpression().accept(this);
+    attribution.getlValue().accept(this);
+
+    String variable = stack.pop(),
+        value = stack.pop(),
+        valueType = typeStack.pop().toLowerCase(Locale.ROOT);
+    builder.append(value).append("\n");
+    builder.append(valueType).append("store_").append(variable);
+
+    stack.push(builder.toString());
+  }
 
   @Override
   public void visit(CommandCall node) {}
@@ -151,9 +232,6 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(CommandReturn node) {}
-
-  @Override
-  public void visit(CommandsList node) {}
 
   @Override
   public void visit(Declarations node) {}
@@ -180,22 +258,63 @@ public class VisitorJasmim implements Visitor {
   public void visit(ExpressionsList node) {}
 
   @Override
-  public void visit(LiteralBool node) {}
+  public void visit(LiteralBool node) {
+    stack.push("zconst_" + node.getValue());
+    typeStack.push("Z");
+    limitStack += 1;
+  }
 
   @Override
-  public void visit(LiteralChar node) {}
+  public void visit(LiteralChar node) {
+    stack.push("cconst_" + node.getValue());
+    typeStack.push("C");
+    limitStack += 1;
+  }
 
   @Override
-  public void visit(LiteralFloat node) {}
+  public void visit(LiteralFloat node) {
+    stack.push("ldc " + node.getValue());
+    typeStack.push("F");
+    limitStack += 1;
+  }
 
   @Override
-  public void visit(LiteralInt node) {}
+  public void visit(LiteralInt node) {
+    stack.push("iconst_" + node.getValue());
+    typeStack.push("I");
+    limitStack += 1;
+  }
 
   @Override
-  public void visit(LiteralNull node) {}
+  public void visit(LiteralNull node) {
+    stack.push("aconst_null");
+    typeStack.push("A");
+    limitStack += 1;
+  }
 
   @Override
-  public void visit(LValue node) {}
+  public void visit(LValue lValue) {
+    String id = lValue.getId();
+    int index = -1;
+
+    for (int i = 0; i < vars.size(); i++) {
+      Pair<String, String> entry = vars.get(i);
+      if (entry.getFirst().equals(id)) {
+        index = i;
+        break;
+      }
+    }
+
+    if (index == -1) {
+      limitLocals += 1;
+      index = limitLocals - 1;
+      vars.add(new Pair<>(id, null));
+    }
+
+    //    String type = jasminType(vars.get(index).getSecond()).toLowerCase(Locale.ROOT);
+    //    stack.push(type + "store_" + index);
+    stack.push(String.valueOf(index));
+  }
 
   @Override
   public void visit(Node node) {}
