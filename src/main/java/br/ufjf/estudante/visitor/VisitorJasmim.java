@@ -219,7 +219,9 @@ public class VisitorJasmim implements Visitor {
   }
 
   @Override
-  public void visit(CommandCall node) {}
+  public void visit(CommandCall call) {
+    functionCall(call.getId(), call.getParams());
+  }
 
   @Override
   public void visit(CommandIf commandIf) {
@@ -346,8 +348,6 @@ public class VisitorJasmim implements Visitor {
 
     stack.push(builder.toString());
     typeStack.push(leftType);
-
-    //      stack.push(left + "\n" + right + "\n" + op);
   }
 
   @Override
@@ -399,7 +399,9 @@ public class VisitorJasmim implements Visitor {
   }
 
   @Override
-  public void visit(ExpressionCall node) {}
+  public void visit(ExpressionCall call) {
+    functionCall(call.getId(), call.getParams());
+  }
 
   @Override
   public void visit(Expression node) {}
@@ -492,4 +494,32 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(Type node) {}
+
+  private void functionCall(String id, ExpressionsList callParams) {
+    StringBuilder builder = new StringBuilder();
+    StringBuilder paramTypes = new StringBuilder();
+
+    if (callParams != null && !callParams.getExpressions().isEmpty()) {
+      List<Expression> params = callParams.getExpressions();
+
+      isAccess = true;
+      params.get(0).accept(this);
+      isAccess = false;
+      builder.append(stack.pop());
+      paramTypes.append(typeStack.pop());
+
+      for (int i = 1; i < params.size(); i++) {
+        builder.append(",");
+        isAccess = true;
+        params.get(i).accept(this);
+        isAccess = false;
+        builder.append(stack.pop());
+        paramTypes.append(typeStack);
+      }
+    }
+
+    builder.append("invokestatic Main/").append(id).append("(").append(paramTypes).append(")V\n");
+
+    stack.push(builder.toString());
+  }
 }
