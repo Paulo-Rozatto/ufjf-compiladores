@@ -52,7 +52,7 @@ public class VisitorJasmim implements Visitor {
   private List<Pair<String, String>> vars; // id, type
   private int indentLevel;
   private int limitStack = 0, limitLocals = 0;
-  private int equalsCount = 0, notsCount = 0, thensCount = 0;
+  private int equalsCount = 0, notsCount = 0, thensCount = 0, iteratesCount = 0;
 
   private boolean isAccess = false;
 
@@ -247,24 +247,42 @@ public class VisitorJasmim implements Visitor {
     builder.append(label).append("_End:");
     stack.push(builder.toString());
     typeStack.push("I");
-
-    //    StringBuilder builder = new StringBuilder("if (");
-    //    commandIf.getExpression().accept(this);
-    //    builder.append(stack.pop()).append(") ");
-    //    commandIf.getThen().accept(this);
-    //    builder.append(stack.pop());
-    //
-    //    if (commandIf.getOtherwise() != null) {
-    //      builder.append(" else ");
-    //      commandIf.getOtherwise().accept(this);
-    //      builder.append(stack.pop());
-    //    }
-    //
-    //    stack.push(builder.toString());
   }
 
   @Override
-  public void visit(CommandIterate node) {}
+  public void visit(CommandIterate iterate) {
+    StringBuilder builder = new StringBuilder();
+    String iterateVar = String.valueOf(limitLocals++);
+
+    String label = "Iterate_" + iteratesCount++;
+
+    isAccess = true;
+    iterate.getExpression().accept(this);
+    isAccess = false;
+
+    String expression = stack.pop();
+    builder.append(expression).append("\n");
+    builder.append("  istore_").append(iterateVar).append("\n");
+
+    builder.append(label).append(":\n");
+    builder.append("  iload_").append(iterateVar).append("\n");
+
+    typeStack.pop();
+    builder.append("  ifeq ").append(label).append("_End\n");
+
+    iterate.getCommand().accept(this);
+    builder.append(stack.pop());
+
+    builder.append("  iload_").append(iterateVar).append("\n");
+    builder.append("  iconst_1").append("\n");
+    builder.append("  isub").append("\n");
+    builder.append("  istore_").append(iterateVar).append("\n");
+
+    builder.append("  goto ").append(label).append("\n");
+    builder.append(label).append("_End:");
+
+    stack.push(builder.toString());
+  }
 
   @Override
   public void visit(Command node) {}
@@ -281,7 +299,7 @@ public class VisitorJasmim implements Visitor {
     builder.append("  getstatic java/lang/System/out Ljava/io/PrintStream;\n");
     builder.append(stack.pop()).append("\n");
     builder
-        .append("  invokevirtual java/io/PrintStream/println(")
+        .append("  invokevirtual java/io/PrintStream/print(")
         .append(typeStack.pop())
         .append(")V\n");
 
@@ -401,7 +419,9 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(LiteralChar node) {
-    stack.push("  cconst_" + node.getValue());
+    String builder = "  bipush " + +node.getValue().charAt(0) + "\n" + "  i2c\n";
+
+    stack.push(builder);
     typeStack.push("C");
     limitStack += 1;
   }
