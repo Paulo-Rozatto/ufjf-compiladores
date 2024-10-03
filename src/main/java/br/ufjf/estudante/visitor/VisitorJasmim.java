@@ -51,7 +51,7 @@ public class VisitorJasmim implements Visitor {
   private Stack<String> typeStack;
   private List<Pair<String, String>> vars; // id, type
   private int indentLevel;
-  private int limitStack = 0, limitLocals = 0;
+  private int limitStack = 0, limitLocals = 0, equalsCount = 0, notsCount;
 
   private boolean isAccess = false;
 
@@ -72,7 +72,7 @@ public class VisitorJasmim implements Visitor {
     } else if (type instanceof TypeChar) {
       jsmType = "C";
     } else if (type instanceof TypeBool) {
-      jsmType = "Z";
+      jsmType = "I";
     } else if (type instanceof TypeCustom) {
       jsmType = "L" + ((TypeCustom) type).getId() + ";";
     } else {
@@ -91,7 +91,6 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(Program program) {
-    //    indentLevel = 0;
     code.append(".class public Main\n").append(".super java/lang/Object\n\n");
 
     code.append(JasmimCode.default_init).append("\n");
@@ -294,7 +293,52 @@ public class VisitorJasmim implements Visitor {
   }
 
   @Override
-  public void visit(ExpressionBoolean node) {}
+  public void visit(ExpressionBoolean node) {
+    StringBuilder builder = new StringBuilder();
+
+    node.getRight().accept(this);
+    String right = stack.pop();
+    typeStack.pop();
+    builder.append(right).append("\n");
+
+    if (node.getLeft() == null) {
+      String label = "Not_" + notsCount++;
+      builder.append("  ifeq ").append(label).append("\n");
+      builder.append("  iconst_0\n");
+      builder.append("  goto ").append(label).append("_End\n");
+      builder.append(label).append(":\n").append("  iconst_1\n");
+      builder.append(label).append("_End:");
+      stack.push(builder.toString());
+      typeStack.push("I");
+      return;
+    }
+
+    // Visit the left-hand side expression
+    node.getLeft().accept(this);
+    String left = stack.pop();
+    typeStack.pop();
+    builder.append(left).append("\n");
+
+    if (node.getOp().equals("==")) {
+      String label = "Equals_" + equalsCount++;
+      builder.append("  if_icmpeq ").append(label).append("\n");
+      builder.append("  iconst_0\n");
+      builder.append("  goto ").append(label).append("_End\n");
+      builder.append(label).append(":\n").append("  iconst_1\n");
+      builder.append(label).append("_End:");
+    } else {
+      String op =
+          switch (node.getOp()) {
+            case "&&" -> "iand";
+            case "||" -> "or";
+            default -> throw new UnsupportedOperationException("Boolean operation not supported");
+          };
+      builder.append("  ").append(op);
+    }
+
+    stack.push(builder.toString());
+    typeStack.push("I");
+  }
 
   @Override
   public void visit(ExpressionCall node) {}
@@ -310,8 +354,8 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(LiteralBool node) {
-    stack.push("  zconst_" + node.getValue());
-    typeStack.push("Z");
+    stack.push("  iconst_" + (node.getValue() ? "1" : "0"));
+    typeStack.push("I");
     limitStack += 1;
   }
 
