@@ -99,6 +99,7 @@ public class VisitorJasmim implements Visitor {
     program.getDefList().accept(this);
 
     code.append(stack.pop());
+    code.append(JasmimCode.mainFunction);
   }
 
   @Override
@@ -230,7 +231,23 @@ public class VisitorJasmim implements Visitor {
   public void visit(Command node) {}
 
   @Override
-  public void visit(CommandPrint node) {}
+  public void visit(CommandPrint print) {
+    StringBuilder builder = new StringBuilder();
+    limitStack += 1;
+
+    isAccess = true;
+    print.getExpression().accept(this);
+    isAccess = false;
+
+    builder.append("  getstatic java/lang/System/out Ljava/io/PrintStream;\n");
+    builder.append(stack.pop()).append("\n");
+    builder
+        .append("  invokevirtual java/io/PrintStream/println(")
+        .append(typeStack.pop())
+        .append(")V\n");
+
+    stack.push(builder.toString());
+  }
 
   @Override
   public void visit(CommandRead node) {}
@@ -268,7 +285,7 @@ public class VisitorJasmim implements Visitor {
         };
 
     // tipo dos argumentos já foram verificados se são iguais no type check
-    builder.append("  ").append(leftType).append(op);
+    builder.append("  ").append(leftType.toLowerCase(Locale.ROOT)).append(op);
 
     stack.push(builder.toString());
     typeStack.push(leftType);
@@ -342,8 +359,8 @@ public class VisitorJasmim implements Visitor {
     if (isAccess) {
       // Se está acessando variável, já foi verificado no type check que ela existe
       Pair<String, String> var = vars.get(index);
-      typeStack.push(var.getSecond());
-      stack.push(var.getSecond() + "load_" + index);
+      typeStack.push(var.getSecond().toUpperCase(Locale.ROOT));
+      stack.push("  " + var.getSecond() + "load_" + index);
       return;
     }
 
@@ -354,7 +371,7 @@ public class VisitorJasmim implements Visitor {
       vars.add(new Pair<>(id, type));
     }
 
-    stack.push(type + "store_" + index);
+    stack.push("  " + type + "store_" + index);
   }
 
   @Override
