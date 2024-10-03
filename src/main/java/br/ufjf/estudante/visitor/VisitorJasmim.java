@@ -466,7 +466,7 @@ public class VisitorJasmim implements Visitor {
       // Se está acessando variável, já foi verificado no type check que ela existe
       Pair<String, String> var = vars.get(index);
       typeStack.push(var.getSecond().toUpperCase(Locale.ROOT));
-      stack.push("  " + var.getSecond() + "load_" + index);
+      stack.push("  " + var.getSecond().toLowerCase(Locale.ROOT) + "load_" + index);
       return;
     }
 
@@ -505,7 +505,7 @@ public class VisitorJasmim implements Visitor {
       isAccess = true;
       params.get(0).accept(this);
       isAccess = false;
-      builder.append(stack.pop());
+      builder.append(stack.pop()).append("\n");
       paramTypes.append(typeStack.pop());
 
       for (int i = 1; i < params.size(); i++) {
@@ -513,7 +513,7 @@ public class VisitorJasmim implements Visitor {
         isAccess = true;
         params.get(i).accept(this);
         isAccess = false;
-        builder.append(stack.pop());
+        builder.append(stack.pop()).append("\n");
         paramTypes.append(typeStack);
       }
     }
