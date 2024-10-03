@@ -53,6 +53,8 @@ public class VisitorJasmim implements Visitor {
   private int indentLevel;
   private int limitStack = 0, limitLocals = 0;
 
+  private boolean isAccess = false;
+
   public String getCode() {
     return code.toString();
   }
@@ -173,7 +175,7 @@ public class VisitorJasmim implements Visitor {
     builder.append("  .limit locals ").append(limitLocals).append("\n");
     builder.append(stack.pop());
 
-    builder.append("\n").append("  return").append("\n");
+    builder.append("  return").append("\n");
     builder.append(".end method");
 
     stack.push(builder.toString());
@@ -200,14 +202,17 @@ public class VisitorJasmim implements Visitor {
     StringBuilder builder = new StringBuilder();
     String varId = attribution.getlValue().getId();
 
+    isAccess = true;
     attribution.getExpression().accept(this);
+    isAccess = false;
+
     attribution.getlValue().accept(this);
 
-    String variable = stack.pop(),
-        value = stack.pop(),
-        valueType = typeStack.pop().toLowerCase(Locale.ROOT);
+    String variable = stack.pop(), value = stack.pop();
+    //        valueType = typeStack.pop().toLowerCase(Locale.ROOT);
     builder.append(value).append("\n");
-    builder.append(valueType).append("store_").append(variable);
+    builder.append(variable).append("\n");
+    //    builder.append(valueType).append("store_").append(variable);
 
     stack.push(builder.toString());
   }
@@ -240,7 +245,36 @@ public class VisitorJasmim implements Visitor {
   public void visit(Definition node) {}
 
   @Override
-  public void visit(ExpressionArithmetic node) {}
+  public void visit(ExpressionArithmetic node) {
+    StringBuilder builder = new StringBuilder();
+
+    node.getLeft().accept(this);
+    String left = stack.pop();
+    String leftType = typeStack.pop();
+    builder.append(left).append("\n");
+
+    node.getRight().accept(this);
+    String right = stack.pop();
+    typeStack.pop();
+    builder.append(right).append("\n");
+
+    String op =
+        switch (node.getOp()) {
+          case "+" -> "add";
+          case "-" -> "sub";
+          case "*" -> "mul";
+          case "/" -> "div";
+          default -> throw new UnsupportedOperationException("Operação aritmética não suportada");
+        };
+
+    // tipo dos argumentos já foram verificados se são iguais no type check
+    builder.append("  ").append(leftType).append(op);
+
+    stack.push(builder.toString());
+    typeStack.push(leftType);
+
+    //      stack.push(left + "\n" + right + "\n" + op);
+  }
 
   @Override
   public void visit(ExpressionBoolean node) {}
@@ -259,28 +293,28 @@ public class VisitorJasmim implements Visitor {
 
   @Override
   public void visit(LiteralBool node) {
-    stack.push("zconst_" + node.getValue());
+    stack.push("  zconst_" + node.getValue());
     typeStack.push("Z");
     limitStack += 1;
   }
 
   @Override
   public void visit(LiteralChar node) {
-    stack.push("cconst_" + node.getValue());
+    stack.push("  cconst_" + node.getValue());
     typeStack.push("C");
     limitStack += 1;
   }
 
   @Override
   public void visit(LiteralFloat node) {
-    stack.push("ldc " + node.getValue());
+    stack.push("  ldc " + node.getValue());
     typeStack.push("F");
     limitStack += 1;
   }
 
   @Override
   public void visit(LiteralInt node) {
-    stack.push("iconst_" + node.getValue());
+    stack.push("  iconst_" + node.getValue());
     typeStack.push("I");
     limitStack += 1;
   }
@@ -295,8 +329,8 @@ public class VisitorJasmim implements Visitor {
   @Override
   public void visit(LValue lValue) {
     String id = lValue.getId();
-    int index = -1;
 
+    int index = -1;
     for (int i = 0; i < vars.size(); i++) {
       Pair<String, String> entry = vars.get(i);
       if (entry.getFirst().equals(id)) {
@@ -305,15 +339,22 @@ public class VisitorJasmim implements Visitor {
       }
     }
 
-    if (index == -1) {
-      limitLocals += 1;
-      index = limitLocals - 1;
-      vars.add(new Pair<>(id, null));
+    if (isAccess) {
+      // Se está acessando variável, já foi verificado no type check que ela existe
+      Pair<String, String> var = vars.get(index);
+      typeStack.push(var.getSecond());
+      stack.push(var.getSecond() + "load_" + index);
+      return;
     }
 
-    //    String type = jasminType(vars.get(index).getSecond()).toLowerCase(Locale.ROOT);
-    //    stack.push(type + "store_" + index);
-    stack.push(String.valueOf(index));
+    String type = typeStack.pop().toLowerCase(Locale.ROOT);
+    if (index == -1) {
+      index = limitLocals;
+      limitLocals += 1;
+      vars.add(new Pair<>(id, type));
+    }
+
+    stack.push(type + "store_" + index);
   }
 
   @Override
