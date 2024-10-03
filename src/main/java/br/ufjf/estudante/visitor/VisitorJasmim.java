@@ -51,7 +51,8 @@ public class VisitorJasmim implements Visitor {
   private Stack<String> typeStack;
   private List<Pair<String, String>> vars; // id, type
   private int indentLevel;
-  private int limitStack = 0, limitLocals = 0, equalsCount = 0, notsCount;
+  private int limitStack = 0, limitLocals = 0;
+  private int equalsCount = 0, notsCount = 0, thensCount = 0;
 
   private boolean isAccess = false;
 
@@ -221,7 +222,46 @@ public class VisitorJasmim implements Visitor {
   public void visit(CommandCall node) {}
 
   @Override
-  public void visit(CommandIf node) {}
+  public void visit(CommandIf commandIf) {
+    StringBuilder builder = new StringBuilder();
+
+    commandIf.getExpression().accept(this);
+    typeStack.pop();
+
+    builder.append(stack.pop()).append("\n");
+
+    String label = "Then_" + thensCount++;
+    builder.append("  ifeq ").append(label).append("\n");
+
+    if (commandIf.getOtherwise() != null) {
+      commandIf.getThen().accept(this);
+      builder.append(stack.pop());
+    }
+
+    builder.append("  goto ").append(label).append("_End\n");
+
+    builder.append(label).append(":\n");
+    commandIf.getOtherwise().accept(this);
+    builder.append(stack.pop());
+
+    builder.append(label).append("_End:");
+    stack.push(builder.toString());
+    typeStack.push("I");
+
+    //    StringBuilder builder = new StringBuilder("if (");
+    //    commandIf.getExpression().accept(this);
+    //    builder.append(stack.pop()).append(") ");
+    //    commandIf.getThen().accept(this);
+    //    builder.append(stack.pop());
+    //
+    //    if (commandIf.getOtherwise() != null) {
+    //      builder.append(" else ");
+    //      commandIf.getOtherwise().accept(this);
+    //      builder.append(stack.pop());
+    //    }
+    //
+    //    stack.push(builder.toString());
+  }
 
   @Override
   public void visit(CommandIterate node) {}
