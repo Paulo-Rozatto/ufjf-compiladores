@@ -1,31 +1,7 @@
 package br.ufjf.estudante.util;
 
 public class JasmimCode {
-  public static final String mainClass =
-      """
-; Custom types
-%s
 
-.class public Main
-.super java/lang/Object
-
-.method public <init>()V
-   aload_0
-
-   invokenonvirtual java/lang/Object/<init>()V
-   return
-.end method
-
-; Functions
-%s
-
-.method public static main([Ljava/lang/String;)V
-; stack size
-   .limit stack %d
-
-   return
-.end method
-""";
   public static final String customType =
       """
 .class public %s
@@ -52,6 +28,16 @@ public class JasmimCode {
 
    invokenonvirtual java/lang/Object/<init>()V
    return
+.end method
+""";
+
+  public static final String mainFunction =
+      """
+.method public static main([Ljava/lang/String;)V
+    .limit stack 1
+    .limit locals 1
+    invokestatic Main/main()V
+    return
 .end method
 """;
 
