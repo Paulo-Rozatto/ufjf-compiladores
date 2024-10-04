@@ -43,7 +43,6 @@ import lang.ast.Params;
 import lang.ast.Program;
 import lang.ast.ReturnTypes;
 import lang.ast.Type;
-import lang.ast.TypeArray;
 import lang.ast.TypeBool;
 import lang.ast.TypeChar;
 import lang.ast.TypeCustom;
@@ -69,9 +68,7 @@ public class VisitorJasmim implements Visitor {
     StringBuilder builder = new StringBuilder();
     String jsmType;
 
-    if (type instanceof TypeArray) {
-      throw new RuntimeException("Cara, nao eh para ter TypeArray aqui");
-    } else if (type instanceof TypeInt) {
+    if (type instanceof TypeInt) {
       jsmType = "I";
     } else if (type instanceof TypeFloat) {
       jsmType = "F";
@@ -127,27 +124,13 @@ public class VisitorJasmim implements Visitor {
   public void visit(Data data) {
     StringBuilder builder = new StringBuilder(".class public ");
     builder.append(data.getId()).append("\n").append(".super java/lang/Object").append("\n\n");
-    //    List<Map.Entry<String, Type>> arrays = new ArrayList<>();
 
     for (Map.Entry<String, Type> entry : data.getDeclarations().entrySet()) {
       String id = entry.getKey();
       Type type = entry.getValue();
       builder.append(".field public ").append(id).append(jasminType(type)).append("\n");
-
-      //      if (type.getDimensions() > 1) {
-      //        arrays.add(entry);
-      //      }
     }
     builder.append("\n").append(JasmimCode.default_init);
-
-    // Arrays precisam ser inicializados, mas nao eh aqui
-    //    builder.append("\n").append(".method public <init>()V").append("\n");
-    //    for(Map.Entry<String, Type> entry : arrays) {
-    //      String id = entry.getKey();
-    //      Type type = entry.getValue();
-    ////      int size =
-    //
-    //    }
 
     stack.push(builder.toString());
   }
@@ -190,8 +173,6 @@ public class VisitorJasmim implements Visitor {
   @Override
   public void visit(CommandsList commandsList) {
     StringBuilder builder = new StringBuilder("\n");
-    //    indentLevel += 1;
-    indentLevel = 0;
 
     for (Command command : commandsList.getCommands()) {
       command.accept(this);
@@ -199,14 +180,12 @@ public class VisitorJasmim implements Visitor {
       builder.append(stack.pop()).append("\n");
     }
 
-    //    indentLevel -= 1;
     stack.push(builder.toString());
   }
 
   @Override
   public void visit(CommandAttribution attribution) {
     StringBuilder builder = new StringBuilder();
-    String varId = attribution.getlValue().getId();
 
     isAccess = true;
     attribution.getExpression().accept(this);
@@ -215,10 +194,8 @@ public class VisitorJasmim implements Visitor {
     attribution.getlValue().accept(this);
 
     String variable = stack.pop(), value = stack.pop();
-    //        valueType = typeStack.pop().toLowerCase(Locale.ROOT);
     builder.append(value).append("\n");
     builder.append(variable).append("\n");
-    //    builder.append(valueType).append("store_").append(variable);
 
     stack.push(builder.toString());
   }
