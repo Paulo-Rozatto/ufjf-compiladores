@@ -43,3 +43,4 @@ build/
 *.jar
 *.j
 *.class
+*.mjs
