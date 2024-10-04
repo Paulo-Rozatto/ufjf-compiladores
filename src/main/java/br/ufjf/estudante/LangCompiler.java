@@ -1,9 +1,18 @@
+/*
+  André Luiz Cunha de Oliveira  - 201935020
+  Paulo Victor de M. Rozatto  - 201935027
+*/
+
 package br.ufjf.estudante;
 
 import br.ufjf.estudante.util.Messenger;
 import br.ufjf.estudante.visitor.VisitorInterpreter;
+import br.ufjf.estudante.visitor.VisitorJasmim;
 import br.ufjf.estudante.visitor.VisitorJavaScript;
 import br.ufjf.estudante.visitor.VisitorTypeCheck;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import lang.ast.Program;
 import lang.ast.SuperNode;
 import lang.parser.ParseAdaptor;
@@ -53,7 +62,10 @@ public class LangCompiler {
         System.out.println("Para usar essa opção, especifique um nome de arquivo");
         return;
       }
+
       SuperNode result = langParser.parseFile(args[1]);
+      String filename = Paths.get(args[1]).getFileName().toString();
+
       if (result == null) {
         System.err.println("Aborting due to syntax error(s)");
         System.exit(1);
@@ -80,11 +92,27 @@ public class LangCompiler {
         // iv = new PPrint();
         // result.accept(iv);
         // ((PPrint)iv).print();
-      } else if (args[0].equals("-js")) {
+      } else if (args[0].equals("-s")) {
         VisitorJavaScript visitorJs = new VisitorJavaScript();
         try {
           Program prog = (Program) (result);
           prog.accept(visitorJs);
+          Files.write(
+              Paths.get(filename + ".mjs"),
+              visitorJs.getCode().getBytes(),
+              StandardOpenOption.CREATE);
+        } catch (Exception e) {
+          Messenger.error(e.getMessage(), 0);
+        }
+      } else if (args[0].equals("-j")) {
+        VisitorJasmim visitorJasmim = new VisitorJasmim();
+        try {
+          Program prog = (Program) (result);
+          prog.accept(visitorJasmim);
+          Files.write(
+              Paths.get(filename + ".j"),
+              visitorJasmim.getCode().getBytes(),
+              StandardOpenOption.CREATE);
         } catch (Exception e) {
           Messenger.error(e.getMessage(), 0);
         }
